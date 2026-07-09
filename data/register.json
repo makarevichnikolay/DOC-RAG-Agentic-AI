@@ -1,0 +1,23 @@
+{
+  "client": "Northwind Logistics",
+  "note": "Register = human-confirmed facts after auto-extraction (seed). The Q&A below runs live via RAG.",
+  "register": [
+    { "doc": "Transportation MSA", "term": "Month-to-month", "law": "Texas", "parties": "Martin Resource ↔ Martin Transport", "key": "Liability cap §10c" },
+    { "doc": "Warehouse Lease", "term": "10 yrs + 3-yr auto-renew", "law": "Belgium", "parties": "Weerts ↔ Supplies Distributors", "key": "Insurance Art.9" },
+    { "doc": "Services MSA", "term": "Per SOW", "law": "Texas", "parties": "MetroPCS ↔ InComm", "key": "Change of control Art.5" },
+    { "doc": "Employment (CEO)", "term": "2 years", "law": "Montana", "parties": "Bakken ↔ V. Holms", "key": "Non-compete" },
+    { "doc": "Mutual NDA", "term": "Confidentiality 2 yrs", "law": "Delaware", "parties": "Tech Research ↔ Coleman Cable", "key": "Standstill" }
+  ],
+  "presets": [
+    "Which contracts auto-renew and what notice is required?",
+    "Which contracts contain a change of control clause?",
+    "What is the warehouse rent per m²?",
+    "What is the home address of Northwind's CEO?"
+  ],
+  "flags": [
+    { "level": "warn", "doc": "Warehouse Lease", "text": "Auto-renewal window approaching (3-year cycle) — a decision is needed before the notice deadline.", "cite": "Art.6" },
+    { "level": "danger", "doc": "Services MSA", "text": "Contains a change of control clause — critical in a sale / M&A of the company.", "cite": "Art.5" },
+    { "level": "danger", "doc": "Transportation MSA", "text": "Month-to-month — low stability; the counterparty can terminate easily.", "cite": "§2" },
+    { "level": "info", "doc": "Transport + Lease", "text": "Cargo / property insurance obligation — create a task for the responsible team.", "cite": "MSA §; Lease Art.9" }
+  ]
+}

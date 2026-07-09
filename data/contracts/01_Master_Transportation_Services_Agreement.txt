@@ -1,0 +1,148 @@
+Exhibit 10.1
+
+MASTER TRANSPORTATION SERVICES AGREEMENT
+
+THIS MASTER TRANSPORTATION SERVICES AGREEMENT (“Agreement”) made effective as of the 1st day of January 2019 (the “Effective Date”) between
+
+Martin Resource Management Corporation, a Texas corporation,
+
+Cross Oil Refining & Marketing, Inc., a Delaware corporation,
+
+Martin Energy Services LLC, an Alabama limited liability company, and
+
+Martin Product Sales LLC, a Texas limited liability company (each a “Shipper”), and
+
+Martin Transport Inc., a Texas corporation (“Carrier”). The above-named entities are sometimes referred to in this Agreement each as a “Party” and collectively as the “Parties.”
+
+WHEREAS, Carrier is engaged in the business of transporting petroleum products and by-products (collectively, the “Product”) by tank truck as a contract carrier;
+
+WHEREAS, each Shipper desire the services of Carrier to satisfy the special and distinct needs of Shipper as set forth herein; and
+
+WHEREAS, the Parties desire to enter into a contract, not a common carrier relationship and hereto expressly waive any or all rights and remedies under the ICC Termination Act for the transportation provided hereunder, pursuant to 49.U.S.C. 14101(b)(1), to establish the terms and conditions upon which such services will be provided by Carrier.
+
+NOW, THEREFORE, in consideration of the mutual covenants and agreements set forth in this Agreement, and for other good and valuable consideration, the receipt and sufficiency of which are hereby acknowledged, the Parties agree as follows:
+
+1. Services.
+
+(a) General. Carrier may accept interstate and unregulated intrastate lawful shipments of the Product tendered to it by Shipper and to transport such Product to the destination(s) designated by Shipper, subject to the provisions of this Agreement.
+
+(b) Rates. Shipper agrees to pay Carrier for the services performed hereunder in accordance with the freight rates, accessorial charges, fuel surcharge scale and daily trailer storage fees agreed to by the Parties in a signed writing (each a “Rate Sheet”).
+
+(c) Licenses, Laws and Regulations. Carrier, at its sole cost, and expense, shall procure and maintain all licenses and permits required by local, state, or federal authorities with respect to the transportation and related services rendered hereunder and shall comply with all applicable laws and regulations pertaining to such transportation and services.
+
+2. Term. The term of this Agreement shall commence on the Effective Date and continue thereafter on a month to month basis unless and until either party provides the other party thirty (30) days’ notice of termination (the “Term”).
+
+3. No Exclusivity or Minimums. This Agreement does not require Carrier to accept loads for shipment from Shipper, nor does it require Shipper to commit a certain volume of loads to Carrier.
+
+4. Equipment.
+
+(a) General. Carrier will endeavor to provide all equipment reasonably necessary to perform the transportation required hereunder, which equipment shall: (i) be suitable for particular transportation required; (ii) include any special equipment that is reasonably requested by Shipper and agreed to by Carrier when the shipping order is placed; and (iii) comply with the specifications for equipment for such transportation prescribed by any applicable governmental regulations (including those of the United States Department of Transportation).
+
+(b) Lead Time. Shipper shall endeavor to provide Carrier with notice of at least forty-eight (48) hours prior to the time which the services are requested.
+
+5. Carrier’s Performance.
+
+(a) General. Services performed hereunder shall be performed in accordance with industry standards with reasonable dispatch consistent with the Carrier's best judgment as to safety and efficiency, except as is specifically provided to the contrary elsewhere in this Agreement.
+
+(b) Drivers. It is understood that the Carrier shall secure the services of, supervise and be responsible for all persons operating trucking equipment hereunder. Carrier’s drivers shall comply with all reasonable operational procedures requested by Shipper.
+
+(c) Reporting. Carrier shall as soon as reasonably practicable report all product spills, shortages (less routine heels) or accidents which occur in the course of the performance of this Agreement.
+
+6. Shipments Not Delivered. Any shipment or part thereof which for any reason is refused, rejected or otherwise not accepted, received or claimed shall be held by Carrier for further instructions from Shipper. Shipper shall reimburse Carrier for any refused/rejected load and daily trailer storage per the Rate Sheet along with redelivery charges as applicable. In such event, Carrier shall contact Shipper and request further transportation instructions, including the location for delivery and the desired delivery time.
+
+7. Shipper’s Payment.
+
+(a) Receipts and Bills of Lading. Each shipment will be evidenced by a receipt in the form specified by Shipper and will be signed by Carrier or Carrier’s agent or employee showing the kind and quantity of freight received by Carrier at origin. If Shipper elects to use a bill of lading, manifest or other form of freight receipt or contract that includes any terms, conditions and provisions that conflict with this Agreement, the terms and conditions of this Agreement will supersede. Upon delivery of each shipment made hereunder, Carrier shall obtain a receipt, in a form specified or approved by Shipper, showing the kind and quantity of freight delivered to the consignee of such shipment at the destination specified by Shipper and the time of such delivery, and Carrier shall cause such receipt to be signed by such receiving personnel or by such agent or employee at such destination, when possible.
+
+(b) Payment. Carrier shall bill Shipper for the freight charges on all shipments as soon after delivery of such shipments as sufficient information is received to prepare such invoices. All invoices are to be paid in full within thirty (30) days of receipt by Shipper of Carrier's invoice.
+
+8. Termination.
+
+(a) Non-Performance. In the event of non-performance by Shipper or Carrier, as the case may be, of any of the obligations contained in the Agreement, Shipper or Carrier as the complaining party shall provide written notice of such non-performance to the other Party. The non-performing Party shall then have thirty (30) days from the date of such notice within which to remedy the non-performance. Thereafter, if the non-performance remains uncorrected or if an acceptable remedy is not reached within ten (10) days of such notice, the complaining Party may terminate this Agreement at any time upon giving the non-performing Party written notice. If this Agreement is terminated in accordance with this subsection, all obligations of the Parties, as contained in this Agreement and the Exhibit hereto, shall be terminated; provided, Shipper shall continue to be responsible for all sums due to Carrier for services received prior to the date of termination.
+
+(b) Default or Insolvency. If a petition in bankruptcy should be filed by Carrier, or if Carrier should be adjudicated as bankrupt, or if Carrier should make a general assignment for the benefit of creditors, or if a receiver should be appointed on account of the insolvency of Carrier, Shipper may, without prejudice to any other right of remedy, terminate this Agreement upon giving Carrier at least five (5) days prior written notice to such termination. Carrier shall have the same rights as Shipper under this Section 8(b).
+
+9. Loss of Product. Carrier shall be responsible for any loss, damage or destruction of Product tendered to it by Shipper from the time such Product enters Carrier’s equipment at the flange connecting Carrier’s equipment to the receipt point until the Product passes through the flange connecting Carrier’s equipment at the delivery point. Carrier shall reimburse Shipper for loss, damage or injury to the Product except when such loss, damage or injury is caused by the wrongful act or negligence of Shipper, its agents or employees, in which case Shipper shall bear its proportionate share of responsibility for all loss, damage or injury of Product. In the event Product is lost, damaged, or injured, Carrier’s liability to Shipper shall be limited to the cost of freight for such lost or damaged Product.
+
+10. Insurance and Indemnity.
+
+(a) Insurance. Without limiting any of its liabilities or obligations under this Agreement, Carrier shall provide and maintain, with form and insurers acceptable to Shipper, during the Term the minimum insurance coverages as follows:
+
+(i) Workmen’s compensation insurance and employer’s liability insurance in accordance with law for all Carrier’s employees in performing Services;
+
+(ii) Normal and customary general liability and vehicle liability with a minimum of $100,000 per vehicle for cargo and $1,000,000 per non-hazardous product occurrence for liability, and $5,000,000 per hazardous product occurrence for liability.
+
+(b) Indemnity. CARRIER shall be responsible for, and shall indemnify, defend and save harmless SHIPPER and its affiliates, subsidiaries, and related companies and the stockholders, members, directors, managers, officers, agents, employees and representatives of each from and against, any and all claims, demands and causes of action brought by any and all persons, on account of personal injury or death or on account of property damage, destruction, or loss to the extent arising out of the negligence or willful misconduct of CARRIER, its officers, employees, agents, representatives and subcontractors.
+
+SHIPPER shall be responsible for, and shall indemnify, defend and save harmless CARRIER and its affiliates, subsidiaries, and related companies and the stockholders, directors, officers, agents, employees and representatives of such from and against, any and all claims, demands and causes of action brought by any and all persons on account of personal injury or death or on account of property damage, destruction, or loss to the extent arising out of the negligence or willful misconduct of SHIPPER, its officers, employees, agents, representatives, contractors and customers.
+
+Notwithstanding anything herein to the contrary, any provision within this Agreement that expands any indemnity obligation of the Carrier beyond that which can be required pursuant to Texas Transportation Code Section 623.0155 shall be null and void and without effect. The indemnity obligations of the Parties’ contained herein shall survive termination of this Agreement.
+
+(c) Limitation of Liability. Carrier’s obligations under this Agreement shall always be subject to any limitations imposed by applicable laws, regulations or other of any governmental authority. NEITHER CARRIER NOR SHIPPER SHALL BE LIABLE TO THE OTHER FOR LOST PROFITS, INDIRECT, CONSEQUENTIAL, SPECIAL, OR PUNITIVE DAMAGES.
+
+11. Independent Contractor. In the performance of transportation service hereunder, Carrier shall be an independent contractor and not an agent or employee of Shipper, and Carrier agrees, at its expense, to furnish suitable equipment to transport the Product, tendered hereunder and to assume all costs and expenses incidental to the transportation of such Product, including all costs and expenses incidental to or arising out of maintenance, repair or operation of equipment, labor, fuel supplies, insurance and/or accident.
+
+12. Force Majeure. Either Carrier or Shipper shall be excused from performance of its obligations hereunder in the event and to the extent that such performance is delayed or prevented by any circumstances reasonably beyond its control, including by fire, explosion, weather conditions, interruption of raw materials, equipment source or fuel supply, strike or other labor dispute, riot or other civil disturbance, or act or omission of any governmental authority.
+
+13. Agreement Controlling. Shipper shall arrange for shipments to be tendered to Carrier on a standard uniform bill of lading or other such document as may be mutually agreed to between Carrier and Shipper, i.e., scale weight ticket, subject to the conditions of this Agreement and applicable Rate Sheet. In the event there is a conflict between the terms of this Agreement and any schedule or bill of lading otherwise applicable to Carrier and Shipper respecting the movements contemplated hereunder, the terms of this Agreement and the applicate Rate Sheet shall be construed as controlling the intent of the parties.
+
+14. Assignment. This Agreement shall be binding upon and inure to the benefit of the successors of Shipper and Carrier. Neither party may assign its rights under this Agreement without the non-assigning party's written consent. However, notwithstanding the above, the parties may assign their right, duties, obligations and interests in and to this Agreement to a parent, subsidiary, affiliate or sister corporation; provided, however, the Parties shall not be thereby relieved of the responsibilities or obligations hereunder.
+
+15. Waiver. Failure of either Party to insist, in one or more instances, upon performance of any of the terms of this Agreement, or the waiver by either Party of any term or right of the other Party hereunder, will not be deemed or construed as a waiver or a relinquishment of any such term or right.
+
+16. Applicable Law. This Agreement is to be construed in accordance with the laws of the State of Texas without giving effect to the principles of conflict laws. Any legal actions filed may be brought only to the state or federal courts in Texas.
+
+17. Notices. Notice, as may be required hereunder, by either Party of this Agreement to the other Party shall be deemed to have been accomplished on date of delivery by the United States mail as evidenced by date of return receipt, when sent by certified mail, postage prepaid, to the following addresses:
+
+Shipper:
+
+Martin Resource Management Corporation
+Attn: Robert D. Bondurant
+4200 Stone Road
+Kilgore, TX 75662
+
+Carrier:
+
+Martin Transport, Inc.
+Attn: Johnnie Murry
+4200 Stone Road
+Kilgore, TX 75662
+
+18. No Joint and Several Liabilities. There shall be no joint and several liabilities among the Shippers. Each Shipper that enters into this Agreement and executes a Rate Sheet with Carrier is individually responsible only for its own obligations under the Agreement and applicable Rate Sheet.
+
+19. Entire Contract. This Agreement and any Rate Sheet embodies the entire agreement and understanding between Shipper and Carrier as of the effective date of this Agreement, and there are no agreements, understandings, conditions, warranties or representations, oral of written, express or implied, with reference to the subject matter hereof that are not merged herein or superseded hereby as of the effective date of this Agreement.
+
+20. Authority. Each Party represents to the other that is has full power, authority and the necessary approval to enter into and perform this Agreement in accordance with its terms.
+
+[Signature Page Immediately Follows]
+
+IN WITNESS THEREOF, the Parties have caused this Agreement to be signed by their duly authorized representatives on this _____ day of January, 2019.
+
+SHIPPER:
+
+MARTIN RESOURCE MANAGEMENT CORPORATION
+By:
+Printed Name:
+Title:
+
+CROSS OIL REFINING & MARKETING, INC.
+By:
+Printed Name:
+Title:
+
+MARTIN ENERGY SERVICES LLC
+By:
+Printed Name:
+Title:
+
+MARTIN PRODUCT SALES LLC
+By:
+Printed Name:
+Title:
+
+CARRIER:
+
+MARTIN TRANSPORT INC.
+By:
+Printed Name:
+Title:
