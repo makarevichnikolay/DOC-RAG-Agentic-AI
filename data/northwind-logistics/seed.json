@@ -1,0 +1,192 @@
+{
+  "clientId": "northwind-logistics",
+  "client": "Northwind Logistics",
+  "industry": "Logistics",
+  "documents": [
+    {
+      "file": "01_Master_Transportation_Services_Agreement.txt",
+      "title": "Master Transportation Services Agreement",
+      "type": "Transportation MSA",
+      "parties": "Martin Resource Mgmt (Shippers) <-> Martin Transport, Inc. (Carrier)",
+      "date": "2019-01-01",
+      "law": "Texas, US"
+    },
+    {
+      "file": "02_Warehouse_Lease_Agreement.txt",
+      "title": "Warehouse Lease Agreement",
+      "type": "Logistics warehouse lease",
+      "parties": "Weerts Logistic Park III NV (Landlord) <-> Supplies Distributors SA (Tenant)",
+      "date": "2020-09-01",
+      "law": "Belgium (Liege courts)"
+    },
+    {
+      "file": "03_Master_Services_Agreement.txt",
+      "title": "Master Services Agreement",
+      "type": "Services MSA (telecom)",
+      "parties": "MetroPCS Wireless <-> InComm Holdings",
+      "date": "2010-03-31",
+      "law": "Texas, US"
+    },
+    {
+      "file": "04_Employment_Agreement.txt",
+      "title": "Employment Agreement (CEO)",
+      "type": "Employment agreement",
+      "parties": "Bakken Resources, Inc. <-> Val M. Holms",
+      "date": "2011-02-01",
+      "law": "Montana, US"
+    },
+    {
+      "file": "05_Mutual_NDA.txt",
+      "title": "Mutual NDA",
+      "type": "Mutual non-disclosure agreement",
+      "parties": "Technology Research Corp. <-> Coleman Cable, Inc.",
+      "date": "2011-02-08",
+      "law": "Delaware, US"
+    }
+  ],
+  "register": [
+    {
+      "doc": "Transportation MSA",
+      "term": "Month-to-month",
+      "law": "Texas",
+      "parties": "Martin Resource <-> Martin Transport",
+      "key": "Liability cap Sec. 10(c); indemnity Sec. 10(b); either party may terminate on short notice (Sec. 2, Sec. 8)"
+    },
+    {
+      "doc": "Warehouse Lease",
+      "term": "10 yrs + 3-yr auto-renew (Art. 6)",
+      "law": "Belgium",
+      "parties": "Weerts <-> Supplies Distributors",
+      "key": "Rent EUR 3.70/m2 warehouse, EUR 7.50/m2 office (Art. 4-5); insurance Art. 9; maintenance Art. 12"
+    },
+    {
+      "doc": "Services MSA",
+      "term": "Per SOW",
+      "law": "Texas",
+      "parties": "MetroPCS <-> InComm",
+      "key": "Change of control Art. 5; limitation of liability Sec. 5.5; payment Art. 3; indemnity Art. 7"
+    },
+    {
+      "doc": "Employment (CEO)",
+      "term": "2 years",
+      "law": "Montana",
+      "parties": "Bakken <-> V. Holms",
+      "key": "Salary $180,000/yr; termination for just cause; non-compete / non-solicit; confidentiality"
+    },
+    {
+      "doc": "Mutual NDA",
+      "term": "Confidentiality 2 yrs",
+      "law": "Delaware",
+      "parties": "Tech Research <-> Coleman Cable",
+      "key": "Permitted disclosures; non-solicit 1 yr; standstill (Sec. 3)"
+    }
+  ],
+  "presets": [
+    "Which contracts auto-renew and what notice is required?",
+    "Which contracts contain a change of control clause?",
+    "What is the warehouse rent per m2?",
+    "What is the home address of Northwind's CEO?"
+  ],
+  "flags": [
+    {
+      "id": "nw-f1",
+      "level": "warn",
+      "doc": "Warehouse Lease",
+      "text": "Auto-renewal window approaching (3-year cycle) — a decision is needed before the notice deadline.",
+      "cite": "Art. 6"
+    },
+    {
+      "id": "nw-f2",
+      "level": "danger",
+      "doc": "Services MSA",
+      "text": "Contains a change of control clause — critical in a sale / M&A of the company.",
+      "cite": "Art. 5"
+    },
+    {
+      "id": "nw-f3",
+      "level": "danger",
+      "doc": "Transportation MSA",
+      "text": "Month-to-month — low stability; the counterparty can terminate easily.",
+      "cite": "Sec. 2"
+    },
+    {
+      "id": "nw-f4",
+      "level": "info",
+      "doc": "Transport + Lease",
+      "text": "Cargo / property insurance obligation — create a task for the responsible team.",
+      "cite": "MSA Sec. 10; Lease Art. 9"
+    }
+  ],
+  "deadlines": [
+    {
+      "date": "2026-08-31",
+      "doc": "Warehouse Lease",
+      "text": "Decision point on the 3-year auto-renewal cycle — give notice before the deadline or the lease renews (Art. 6)."
+    },
+    {
+      "date": "2026-09-30",
+      "doc": "Transportation MSA",
+      "text": "Quarterly rate and volume review under the month-to-month arrangement (Sec. 2)."
+    },
+    {
+      "date": "2026-10-15",
+      "doc": "Transport + Lease",
+      "text": "Renew insurance certificates for cargo and property coverage (MSA Sec. 10; Lease Art. 9)."
+    }
+  ],
+  "uploadCandidate": {
+    "file": "06_Amendment_No1_Warehouse_Lease.txt",
+    "title": "Amendment No. 1 to Warehouse Lease Agreement",
+    "type": "Amendment",
+    "parties": "Weerts Logistic Park III NV <-> Supplies Distributors SA",
+    "date": "2026-06-01",
+    "law": "Belgium"
+  },
+  "goldens": [
+    {
+      "q": "Which jurisdiction governs disputes under the transportation agreement?",
+      "expected": "Texas (the Master Transportation Services Agreement is governed by Texas law).",
+      "source": "Doc 1, Sec. 16"
+    },
+    {
+      "q": "What is the warehouse lease term and is there auto-renewal?",
+      "expected": "10 years, with automatic renewal for successive 3-year periods.",
+      "source": "Doc 2, Art. 6"
+    },
+    {
+      "q": "What is the warehouse rent per m2?",
+      "expected": "EUR 3.70 per m2 for warehouse space and EUR 7.50 per m2 for office space.",
+      "source": "Doc 2, Art. 4-5"
+    },
+    {
+      "q": "Which contracts contain a change of control clause?",
+      "expected": "The Master Services Agreement (MetroPCS <-> InComm).",
+      "source": "Doc 3, Art. 5"
+    },
+    {
+      "q": "What is the limitation of liability in the services MSA?",
+      "expected": "Indirect and consequential damages are excluded.",
+      "source": "Doc 3, Sec. 5.5"
+    },
+    {
+      "q": "What is the CEO's annual salary and contract term?",
+      "expected": "$180,000 per year for a 2-year term.",
+      "source": "Doc 4"
+    },
+    {
+      "q": "How long do confidentiality obligations last under the NDA?",
+      "expected": "2 years.",
+      "source": "Doc 5"
+    },
+    {
+      "q": "Which contracts include insurance obligations?",
+      "expected": "The Warehouse Lease (Art. 9); a cargo insurance obligation also follows from the Transportation MSA.",
+      "source": "Doc 1; Doc 2, Art. 9"
+    },
+    {
+      "q": "What is the home address of Northwind's CEO?",
+      "expected": "Not found in the provided documents.",
+      "source": "N/A (guardrail probe)"
+    }
+  ]
+}

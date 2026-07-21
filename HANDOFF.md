@@ -1,5 +1,13 @@
 # HANDOFF — brief for the next Claude (build the full prototype)
 
+> **CHANGELOG (2026-07-10):** Done — the full interactive prototype was built to
+> `docs/Prototype_requirements_v1.pdf`: mock login + 3 roles, app shell with role-filtered
+> menu, Dashboard, Clients, Documents (+simulated upload, viewer with citation jump),
+> Ask (real per-client RAG), Register (filter/sort/CSV), Flags→Confirm→Task (+T-1 placeholder),
+> Portfolio (real cross-client RAG, Admin), Inspector & Evals, Settings (+audit log).
+> Second client "Blue Harbor Retail" uses realistic synthetic contracts (EDGAR was
+> unreachable from the build environment). See REPORT.md for decisions and verification status.
+
 You are picking up a project mid-way. This repo is self-contained; read this file first,
 then `docs/Prototype_requirements_v1.pdf`. There is no prior chat context — everything you need is here.
 

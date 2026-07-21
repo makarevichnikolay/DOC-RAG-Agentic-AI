@@ -1,0 +1,157 @@
+MASTER VENDOR SUPPLY AGREEMENT
+
+This Master Vendor Supply Agreement (this "Agreement") is made and entered into as of October 1, 2024 (the "Effective Date"), by and between BLUE HARBOR RETAIL, INC., a Delaware corporation with its principal place of business at 200 Commerce Way, Portsmouth, New Hampshire 03801 ("Buyer"), and CASCADE CONSUMER GOODS LLC, an Oregon limited liability company with its principal place of business at 4410 SE Water Avenue, Portland, Oregon 97202 ("Vendor"). Buyer and Vendor are each a "Party" and together the "Parties."
+
+RECITALS
+
+WHEREAS, Buyer operates a chain of specialty retail stores and an e-commerce platform under the "Blue Harbor" brand; and
+
+WHEREAS, Vendor manufactures and distributes consumer goods, including housewares, outdoor living products, and seasonal merchandise; and
+
+WHEREAS, Buyer desires to purchase from Vendor, and Vendor desires to supply to Buyer, certain products on the terms and conditions set forth herein;
+
+NOW, THEREFORE, in consideration of the mutual covenants contained herein, and for other good and valuable consideration, the receipt and sufficiency of which are hereby acknowledged, the Parties agree as follows:
+
+1. DEFINITIONS
+
+1.1 "Products" means the goods identified on Exhibit A (Product Schedule), as amended from time to time by mutual written agreement of the Parties.
+
+1.2 "Purchase Order" means a written or electronic order for Products issued by Buyer to Vendor referencing this Agreement.
+
+1.3 "Prices" means the per-unit prices for Products set forth on Exhibit A.
+
+1.4 "Delivery Point" means Buyer's distribution center located at 88 Gateway Industrial Drive, Manchester, New Hampshire 03103, or such other location as Buyer may designate in a Purchase Order.
+
+1.5 "Change of Control" means, with respect to a Party, (a) the sale, lease, or transfer of all or substantially all of such Party's assets; (b) any merger, consolidation, or reorganization of such Party in which the holders of such Party's voting securities immediately prior to the transaction hold less than fifty percent (50%) of the voting securities of the surviving entity; or (c) the acquisition by any person or group of beneficial ownership of more than fifty percent (50%) of the voting securities of such Party.
+
+2. TERM AND RENEWAL
+
+2.1 Initial Term. This Agreement shall commence on the Effective Date and, unless earlier terminated in accordance with Section 11, shall continue in full force and effect for an initial term of two (2) years, expiring on September 30, 2026 (the "Initial Term").
+
+2.2 Automatic Renewal. Upon expiration of the Initial Term, this Agreement shall automatically renew for successive renewal terms of one (1) year each (each, a "Renewal Term"), unless either Party delivers written notice of non-renewal to the other Party not less than sixty (60) days prior to the expiration of the Initial Term or the then-current Renewal Term. For the avoidance of doubt, absent timely notice of non-renewal, the first Renewal Term shall commence on October 1, 2026. The Initial Term together with all Renewal Terms is referred to herein as the "Term."
+
+3. PRODUCTS; ORDERS
+
+3.1 Purchase Orders. Buyer may order Products by issuing Purchase Orders to Vendor. Each Purchase Order shall specify the Products, quantities, requested delivery dates, and Delivery Point. Vendor shall accept or reject each Purchase Order within three (3) business days of receipt; failure to respond within such period shall constitute acceptance.
+
+3.2 No Minimum Commitment. Except as expressly set forth in an accepted Purchase Order, nothing in this Agreement obligates Buyer to purchase any minimum quantity of Products.
+
+3.3 Conflicting Terms. In the event of any conflict between this Agreement and any Purchase Order, invoice, acknowledgment, or similar form, the terms of this Agreement shall control unless the Parties expressly agree otherwise in a writing signed by both Parties.
+
+4. DELIVERY; SERVICE LEVELS
+
+4.1 Delivery Terms. All Products shall be delivered DDP (Incoterms 2020) to the Delivery Point. Title and risk of loss shall pass to Buyer upon Buyer's acceptance of the Products at the Delivery Point.
+
+4.2 On-Time Delivery. Vendor shall deliver not less than ninety-five percent (95%) of Purchase Order line items on or before the confirmed delivery date, measured monthly (the "On-Time Delivery Standard").
+
+4.3 Fill Rate. Vendor shall maintain an order fill rate of not less than ninety-seven percent (97%) of units ordered, measured monthly (the "Fill Rate Standard").
+
+4.4 Service Level Credits. If Vendor fails to meet the On-Time Delivery Standard or the Fill Rate Standard in any calendar month, Vendor shall issue to Buyer a credit equal to two percent (2%) of the invoice value of the non-conforming Purchase Orders for such month. Chronic failure, meaning failure to meet either standard in any three (3) consecutive months, shall constitute a material breach of this Agreement.
+
+5. PRICING AND PAYMENT
+
+5.1 Prices. Vendor shall sell the Products to Buyer at the Prices set forth on Exhibit A. Prices are firm for the Initial Term and may be adjusted thereafter only by written amendment executed by both Parties. Prices are exclusive of applicable sales taxes and inclusive of all freight, packaging, and handling to the Delivery Point.
+
+5.2 Invoicing. Vendor shall invoice Buyer upon delivery and acceptance of Products. Each invoice shall reference the applicable Purchase Order number.
+
+5.3 Payment Terms. Buyer shall pay each undisputed invoice within forty-five (45) days after receipt of a correct invoice ("Net 45").
+
+5.4 Early Payment Discount. If Buyer pays an undisputed invoice within ten (10) days after receipt, Buyer shall be entitled to deduct an early payment discount of two percent (2%) of the invoiced amount.
+
+5.5 Disputed Amounts. Buyer may withhold payment of amounts disputed in good faith, provided that Buyer notifies Vendor of the dispute within thirty (30) days of receipt of the applicable invoice and pays all undisputed amounts when due.
+
+6. QUALITY; PRODUCT RECALL
+
+6.1 Quality Standards. All Products shall conform to the specifications set forth on Exhibit A, all applicable laws and regulations (including the Consumer Product Safety Act and regulations of the U.S. Consumer Product Safety Commission), and Vendor's published quality standards.
+
+6.2 Inspection; Rejection. Buyer may inspect Products upon delivery and may reject any Products that are damaged, defective, or non-conforming. Vendor shall, at Buyer's election, replace rejected Products at Vendor's expense or issue a full credit.
+
+6.3 Product Recall. If any Product is subject to a recall, market withdrawal, or safety alert, whether mandated by a governmental authority or initiated voluntarily by Vendor or Buyer acting reasonably, Vendor shall bear all costs and expenses of the recall, including the cost of notifying customers, return freight, refunds or replacement of affected Products, and Buyer's reasonable administrative and handling costs. Vendor shall notify Buyer within twenty-four (24) hours of becoming aware of any fact suggesting a Product may present a safety hazard or fail to comply with applicable law.
+
+7. REPRESENTATIONS AND WARRANTIES
+
+7.1 Mutual. Each Party represents and warrants that (a) it is duly organized and validly existing under the laws of its jurisdiction of organization; (b) it has full power and authority to enter into and perform this Agreement; and (c) this Agreement constitutes its legal, valid, and binding obligation.
+
+7.2 Vendor Product Warranty. Vendor warrants that all Products (a) shall be new, merchantable, and free from defects in design, materials, and workmanship for a period of twelve (12) months from delivery; (b) shall conform to the applicable specifications; (c) shall be free of any liens or encumbrances; and (d) shall not infringe the intellectual property rights of any third party.
+
+8. INDEMNIFICATION
+
+8.1 Vendor Indemnity. Vendor shall defend, indemnify, and hold harmless Buyer and its affiliates, and their respective officers, directors, employees, and agents, from and against any and all claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising out of or relating to (a) any actual or alleged defect in a Product; (b) any actual or alleged infringement by a Product of any third-party intellectual property right; (c) any recall of a Product; (d) Vendor's breach of this Agreement; or (e) the negligence or willful misconduct of Vendor or its personnel.
+
+8.2 Buyer Indemnity. Buyer shall defend, indemnify, and hold harmless Vendor from and against third-party claims to the extent arising out of Buyer's material breach of this Agreement or the negligence or willful misconduct of Buyer or its personnel.
+
+8.3 Procedure. The indemnified Party shall provide prompt written notice of any claim, reasonable cooperation, and sole control of the defense and settlement to the indemnifying Party, provided that no settlement imposing any obligation on the indemnified Party may be entered into without its prior written consent.
+
+9. INSURANCE
+
+9.1 Vendor shall maintain, at its sole expense, during the Term and for two (2) years thereafter: (a) commercial general liability insurance, including products and completed operations coverage, with limits of not less than Two Million Dollars ($2,000,000) per occurrence and Five Million Dollars ($5,000,000) in the aggregate; (b) workers' compensation insurance as required by law; and (c) umbrella coverage of not less than Five Million Dollars ($5,000,000). Buyer shall be named as an additional insured on the policies described in clause (a), and Vendor shall deliver certificates of insurance to Buyer upon request and upon each policy renewal.
+
+10. CONFIDENTIALITY
+
+10.1 Each Party shall hold in strict confidence all non-public business, technical, and financial information disclosed by the other Party in connection with this Agreement, shall use such information solely to perform its obligations hereunder, and shall not disclose such information to any third party except to its employees, agents, and professional advisors who have a need to know and are bound by confidentiality obligations no less protective than those herein. These obligations survive expiration or termination of this Agreement for three (3) years.
+
+11. TERMINATION
+
+11.1 Termination for Cause. Either Party may terminate this Agreement upon written notice if the other Party materially breaches this Agreement and fails to cure such breach within thirty (30) days after written notice specifying the breach.
+
+11.2 Termination for Insolvency. Either Party may terminate this Agreement immediately upon written notice if the other Party becomes insolvent, files or has filed against it a petition in bankruptcy that is not dismissed within sixty (60) days, or makes an assignment for the benefit of creditors.
+
+11.3 Effect of Termination. Upon expiration or termination, Vendor shall complete all accepted Purchase Orders unless Buyer directs otherwise, and Buyer shall pay for all conforming Products delivered and accepted. Sections 6.3, 8, 9, 10, 12, 14, and 15 shall survive expiration or termination.
+
+12. LIMITATION OF LIABILITY
+
+12.1 Exclusion of Consequential Damages. EXCEPT FOR LIABILITY ARISING UNDER SECTION 8 (INDEMNIFICATION), SECTION 10 (CONFIDENTIALITY), OR A PARTY'S GROSS NEGLIGENCE OR WILLFUL MISCONDUCT, NEITHER PARTY SHALL BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR LOST PROFITS OR LOST REVENUE, ARISING OUT OF OR RELATING TO THIS AGREEMENT, REGARDLESS OF THE THEORY OF LIABILITY.
+
+12.2 Liability Cap. EXCEPT FOR LIABILITY ARISING UNDER SECTION 8 (INDEMNIFICATION) OR A PARTY'S GROSS NEGLIGENCE OR WILLFUL MISCONDUCT, EACH PARTY'S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THIS AGREEMENT SHALL NOT EXCEED THE TOTAL FEES PAID OR PAYABLE BY BUYER TO VENDOR UNDER THIS AGREEMENT DURING THE TWELVE (12) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO THE CLAIM.
+
+13. ASSIGNMENT; CHANGE OF CONTROL
+
+13.1 No Assignment. Neither Party may assign or transfer this Agreement, in whole or in part, whether voluntarily, by operation of law, or otherwise, without the prior written consent of the other Party, which consent shall not be unreasonably withheld, conditioned, or delayed.
+
+13.2 Change of Control. A Change of Control of Vendor shall be deemed an assignment of this Agreement requiring Buyer's prior written consent under Section 13.1. Vendor shall provide Buyer with written notice of any proposed Change of Control at least thirty (30) days prior to its consummation. If a Change of Control of Vendor occurs without Buyer's prior written consent, Buyer may terminate this Agreement upon written notice with immediate effect and without liability.
+
+13.3 Any purported assignment in violation of this Section 13 shall be null and void. Subject to the foregoing, this Agreement shall bind and inure to the benefit of the Parties and their respective permitted successors and assigns.
+
+14. GOVERNING LAW; DISPUTE RESOLUTION
+
+14.1 Governing Law. This Agreement and all matters arising out of or relating to it shall be governed by and construed in accordance with the laws of the State of New York, without regard to its conflict of laws principles. The United Nations Convention on Contracts for the International Sale of Goods shall not apply.
+
+14.2 Venue. Each Party irrevocably submits to the exclusive jurisdiction of the state and federal courts located in the Borough of Manhattan, New York, New York, for any action arising out of or relating to this Agreement, and waives any objection to venue in such courts.
+
+14.3 WAIVER OF JURY TRIAL. EACH PARTY HEREBY IRREVOCABLY WAIVES ANY RIGHT TO A TRIAL BY JURY IN ANY ACTION ARISING OUT OF OR RELATING TO THIS AGREEMENT.
+
+15. MISCELLANEOUS
+
+15.1 Notices. All notices under this Agreement shall be in writing and deemed given when delivered by hand, by nationally recognized overnight courier, or by certified mail (return receipt requested) to the addresses set forth in the preamble, with a copy by email to legal@blueharborretail.com (for Buyer) and contracts@cascadecg.com (for Vendor).
+
+15.2 Force Majeure. Neither Party shall be liable for delay or failure to perform (other than payment obligations) caused by events beyond its reasonable control, provided the affected Party gives prompt notice and uses commercially reasonable efforts to mitigate.
+
+15.3 Independent Contractors. The Parties are independent contractors. Nothing herein creates any partnership, joint venture, agency, or employment relationship.
+
+15.4 Entire Agreement; Amendment. This Agreement, together with its Exhibits, constitutes the entire agreement between the Parties with respect to its subject matter and supersedes all prior and contemporaneous agreements and understandings. This Agreement may be amended only by a written instrument signed by both Parties.
+
+15.5 Severability; Waiver. If any provision of this Agreement is held invalid or unenforceable, the remaining provisions shall remain in full force and effect. No waiver of any breach shall constitute a waiver of any subsequent breach.
+
+15.6 Counterparts. This Agreement may be executed in counterparts, each of which shall be deemed an original, and electronic signatures shall be deemed originals for all purposes.
+
+IN WITNESS WHEREOF, the Parties have caused this Agreement to be executed by their duly authorized representatives as of the Effective Date.
+
+BLUE HARBOR RETAIL, INC.
+
+By: /s/ Margaret T. Ellison
+Name: Margaret T. Ellison
+Title: Chief Merchandising Officer
+Date: October 1, 2024
+
+CASCADE CONSUMER GOODS LLC
+
+By: /s/ Daniel R. Okafor
+Name: Daniel R. Okafor
+Title: President
+Date: October 1, 2024
+
+EXHIBIT A - PRODUCT SCHEDULE (SUMMARY)
+
+Category A: Housewares (SKU series BH-HW-1000 through BH-HW-1499) - unit prices per attached price list.
+Category B: Outdoor Living (SKU series BH-OL-2000 through BH-OL-2299) - unit prices per attached price list.
+Category C: Seasonal Merchandise (SKU series BH-SN-3000 through BH-SN-3199) - unit prices per attached price list.

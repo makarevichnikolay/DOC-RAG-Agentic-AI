@@ -1,11 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    // llamaindex has native/node deps — keep it out of the bundler
-    serverComponentsExternalPackages: ["llamaindex", "@llamaindex/openai"],
-    // ship the contract files with the serverless function (needed on Vercel)
+    // native/node-heavy deps — keep them out of the bundler, run from node_modules
+    serverComponentsExternalPackages: [
+      "llamaindex",
+      "@llamaindex/openai",
+      "openai",
+      "unpdf",
+      "pdf-to-img",
+      "tesseract.js",
+    ],
+    // ship the contract files with the serverless functions (needed on Vercel)
     outputFileTracingIncludes: {
-      "/api/query": ["./data/contracts/**/*"],
+      "/api/query": ["./data/**/*"],
+      "/api/portfolio": ["./data/**/*"],
+      "/api/document": ["./data/**/*"],
+      "/api/ingest": ["./data/**/*"],
     },
   },
 };

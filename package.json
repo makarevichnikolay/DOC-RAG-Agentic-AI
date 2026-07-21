@@ -8,16 +8,20 @@
     "start": "next start"
   },
   "dependencies": {
+    "@llamaindex/openai": "0.4.23",
+    "llamaindex": "0.12.1",
     "next": "14.2.5",
+    "openai": "^6.46.0",
+    "pdf-to-img": "^6.2.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "llamaindex": "0.12.1",
-    "@llamaindex/openai": "0.4.23"
+    "tesseract.js": "^7.0.0",
+    "unpdf": "^1.6.2"
   },
   "devDependencies": {
-    "typescript": "5.5.4",
     "@types/node": "20.14.10",
     "@types/react": "18.3.3",
-    "@types/react-dom": "18.3.0"
+    "@types/react-dom": "18.3.0",
+    "typescript": "5.5.4"
   }
 }

@@ -1,81 +1,89 @@
-# Contract Intelligence — робочий прототип (Next.js + LlamaIndex.TS)
+# Contract Intelligence — full interactive prototype (Next.js + LlamaIndex.TS)
 
-Демо RAG-помічника по договорах на прикладі клієнта «Northwind Logistics».
-Той самий екран, що й у макеті, але з **реальним RAG** по 5 справжніх договорах
-(публічні документи SEC EDGAR у `data/contracts`).
+A Contract / Document Intelligence demo for law firms and document-heavy businesses:
+**mock login with roles, a role-filtered app shell, and every scenario walkable end-to-end**,
+with **real RAG** (retrieval, citations, guardrail, Inspector) over real/realistic contracts,
+scoped per client (isolation).
 
-## Що працює
-- **Реальний RAG** через LlamaIndex.TS: інжест `.txt` → embeddings → векторний індекс (in-memory, будується при першому запиті й кешується).
-- **Q&A з цитатами**: відповідь будується лише з документів; кожне джерело показується з relevance-скором.
-- **Guardrail**: якщо найкращий фрагмент нижче порогу релевантності → чесне «Не знайдено в наданих документах» замість вигадки.
-- **Inspector**: розкриває знайдені фрагменти, скори й рішення guardrail.
-- **Реєстр умов і флаги**: людиною підтверджений seed (`data/register.json`).
+Built to `docs/Prototype_requirements_v1.pdf`. English only.
 
-> Принцип: інструмент **витягує факти з документів і цитує джерело**, не дає юридичних висновків.
+## Real vs simulated
 
-## Запуск
+| Component | Status |
+|---|---|
+| Q&A: retrieval, citations, guardrail, Inspector | **REAL** — live RAG per client (`/ask`) |
+| Client isolation (scoped retrieval) | **REAL** — separate in-memory index per client |
+| Portfolio cross-client query (Admin) | **REAL** — same pipeline over every client's index (`/portfolio`) |
+| Login & roles | MOCK — pick a role, no password (cookie session) |
+| Menu/navigation, dashboard | MOCK — clickable, seed data |
+| Document upload | MOCK — "processing" animation, pre-loaded file appears |
+| Register of terms | SEED — human-confirmed facts per client |
+| Flags & tasks | SEED + local state — Confirm creates a task; T-1 generates a placeholder doc |
+| Evals panel | SEED metrics + REAL last-query chunks/scores |
+| Audit log | MOCK — session memory (Settings) |
+
+## Demo clients
+
+- **Northwind Logistics** — 5 real public contracts (SEC EDGAR) in `data/contracts/`.
+- **Blue Harbor Retail** — 3 realistic synthetic retail contracts in `data/blue-harbor-retail/contracts/`
+  (EDGAR fetch was unavailable when they were assembled; see `_SOURCE_README.md` there).
+
+## Roles (mock login)
+
+- **Legal Analyst** — clients, documents, Ask, register, flags.
+- **Operations / Procurement** — same, but register and evals are view-only; no portfolio/settings.
+- **Partner / Admin** — everything + cross-client Portfolio + Evals + Settings.
+
+"Switch role" is always available in the top bar.
+
+## Run
 
 ```bash
 npm install
-cp .env.example .env.local      # і вставте свій OPENAI_API_KEY
-npm run dev
-# відкрийте http://localhost:3000
+cp .env.example .env.local      # add your OPENAI_API_KEY
+npm run dev                      # http://localhost:3000
+npm run build                    # must pass; the key is only needed for live queries
 ```
 
-Потрібен ключ OpenAI (використовуються `gpt-4o-mini` + `text-embedding-3-small` — дешево).
-Перший запит будує індекс (кілька секунд), далі — швидко.
+Models: `gpt-4o-mini` + `text-embedding-3-small` (cheap). The per-client index is built
+on the first query for that client and cached in memory.
 
-## Деплой на Vercel (~5 хв)
+## Structure
 
-Спосіб A — через GitHub (рекомендовано):
-1. Залийте цю папку в новий GitHub-репозиторій.
-2. На vercel.com → Add New → Project → Import цей репозиторій (Vercel сам визначить Next.js).
-3. У Settings → Environment Variables додайте `OPENAI_API_KEY`.
-4. Deploy. Отримаєте публічний URL.
-
-Спосіб B — через CLI:
-```bash
-npm i -g vercel
-vercel            # у папці проєкту, слідуйте підказкам
-vercel env add OPENAI_API_KEY
-vercel --prod
+```
+app/login/                 mock login (role + demo name)
+app/(app)/                 app shell: top bar, client selector, role-filtered sidebar
+  dashboard/ clients/ documents/ documents/view/ ask/ register/
+  flags/ portfolio/ evals/ settings/
+app/api/query/             POST { question, clientId } → scoped RAG answer
+app/api/portfolio/         POST { question } → per-client RAG answers (Admin)
+app/api/document/          GET  ?clientId&file → contract text (viewer, path-guarded)
+app/api/config/            GET  effective runtime params (Settings)
+lib/rag.ts                 per-client indexes, retrieval + guardrail + citations
+lib/clients.ts             tenant config (server) · lib/seeds.ts seed data (client)
+data/contracts/            Northwind Logistics contracts (real, SEC EDGAR)
+data/northwind-logistics/  seed.json + extra/ (upload-demo file)
+data/blue-harbor-retail/   contracts/ + seed.json + extra/
 ```
 
-Нотатки для Vercel:
-- `next.config.js` вже містить `outputFileTracingIncludes` — папка `data/contracts` поїде разом із функцією.
-- Індекс будується в пам'яті при холодному старті (ре-embedding 5 договорів) — для демо ок; для продакшену винесіть у персистентний store (pgvector/Qdrant).
-- Роут має `maxDuration = 60`. На плані Hobby ліміт часу функції менший — якщо впираєтесь, зменшіть `TOP_K` або перейдіть на Pro.
+## Settings (env)
 
-## Структура
-```
-app/page.tsx           UI (реєстр, Q&A з цитатами, Inspector, флаги)
-app/api/query/route.ts API запиту (Node runtime)
-lib/rag.ts             RAG: інжест, індекс, retrieval + guardrail + цитати
-data/contracts/*.txt   5 реальних договорів (demo-клієнт)
-data/register.json     seed-реєстр умов, флаги, приклади питань
-```
+| Var | Default | Meaning |
+|-----|---------|---------|
+| `OPENAI_API_KEY` | — | required for live queries only |
+| `LLM_MODEL` | gpt-4o-mini | answer model |
+| `EMBED_MODEL` | text-embedding-3-small | embeddings |
+| `TOP_K` | 5 | retrieved chunks |
+| `RELEVANCE_THRESHOLD` | 0.28 | guardrail (below → refuse) |
 
-## Налаштування (env)
-| Змінна | За замовч. | Опис |
-|--------|-----------|------|
-| `OPENAI_API_KEY` | — | обов'язково |
-| `LLM_MODEL` | gpt-4o-mini | модель відповіді |
-| `EMBED_MODEL` | text-embedding-3-small | модель embeddings |
-| `TOP_K` | 5 | скільки фрагментів витягувати |
-| `RELEVANCE_THRESHOLD` | 0.28 | поріг guardrail (нижче → відмова) |
+## Principles
 
-## Як зробити продакшен-надійніше (наступні кроки)
-- Гібридний пошук (семантика + BM25) + реранкінг (cross-encoder) — вища точність на юридичних термінах.
-- Персистентний векторний store (pgvector / Qdrant) замість in-memory.
-- Структурний прохід «по кожному документу» для задач на повноту (напр. «знайти ВСІ договори з пунктом X»).
-- Ізоляція клієнтів (окремий неймспейс на клієнта).
-- Evals (promptfoo / Ragas) на розміченому наборі — заміри recall/precision.
+Human-in-the-loop (system proposes, human confirms) · a citation on every answer ·
+honest "Not found in the provided documents." · client isolation · facts from documents,
+not legal advice.
 
-## Приватність
-Усі договори — публічні (SEC EDGAR). Для реальних клієнтських даних:
-розгортання у власному контурі та/або LLM без навчання на даних; конфіденційні дані не логувати.
+## Next iterations (out of v1 scope)
 
-## Зміна провайдера
-Код прив'язаний до OpenAI-провайдера LlamaIndex.TS у `lib/rag.ts`.
-Для локальної/приватної моделі замініть `OpenAI`/`OpenAIEmbedding` на відповідний
-провайдер LlamaIndex.TS (напр. Ollama) — решта логіки не змінюється.
+Real user DB/auth, live ingestion of arbitrary uploads, persistent vector store
+(pgvector/Qdrant), hybrid search + reranking, multi-tenant security hardening,
+email notifications, mobile layout.

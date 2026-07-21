@@ -1,0 +1,91 @@
+MUTUAL NON-DISCLOSURE AGREEMENT
+
+This Mutual Non-Disclosure Agreement (this "Agreement") is made and entered into as of May 15, 2025 (the "Effective Date"), by and between BLUE HARBOR RETAIL, INC., a Delaware corporation with its principal place of business at 200 Commerce Way, Portsmouth, New Hampshire 03801 ("Blue Harbor"), and LIGHTHOUSE ANALYTICS CORP., a Delaware corporation with its principal place of business at 1200 Seaport Boulevard, Suite 500, Boston, Massachusetts 02210 ("Lighthouse"). Blue Harbor and Lighthouse are each a "Party" and together the "Parties."
+
+1. PURPOSE
+
+1.1 The Parties wish to explore a potential business relationship under which Lighthouse would provide retail data analytics, demand forecasting, and customer insights services to Blue Harbor (the "Purpose"). In connection with the Purpose, each Party (in such capacity, the "Disclosing Party") may disclose to the other Party (in such capacity, the "Receiving Party") certain Confidential Information, and the Parties desire to protect such information in accordance with this Agreement.
+
+2. DEFINITION OF CONFIDENTIAL INFORMATION
+
+2.1 "Confidential Information" means all non-public information, in any form or medium, disclosed by or on behalf of the Disclosing Party to the Receiving Party in connection with the Purpose, whether before or after the Effective Date, that is designated as confidential or that a reasonable person would understand to be confidential given the nature of the information and the circumstances of disclosure, including without limitation: (a) sales data, point-of-sale records, transaction histories, and store performance metrics; (b) customer data and loyalty program information; (c) merchandising strategies, pricing, and margin data; (d) vendor lists and supply chain information; (e) software, algorithms, models, and technical documentation; (f) business plans, forecasts, and financial information; and (g) the existence and terms of the Parties' discussions concerning the Purpose.
+
+2.2 Confidential Information includes all notes, analyses, compilations, studies, and other materials prepared by the Receiving Party that contain or are derived from Confidential Information of the Disclosing Party.
+
+3. EXCLUSIONS
+
+3.1 Confidential Information does not include information that the Receiving Party can demonstrate by written records: (a) is or becomes generally available to the public other than as a result of a breach of this Agreement by the Receiving Party or its Representatives; (b) was rightfully known to the Receiving Party without restriction prior to disclosure by the Disclosing Party; (c) is rightfully received by the Receiving Party from a third party who is not under an obligation of confidentiality to the Disclosing Party; or (d) is independently developed by the Receiving Party without use of or reference to the Disclosing Party's Confidential Information.
+
+4. OBLIGATIONS OF THE RECEIVING PARTY
+
+4.1 The Receiving Party shall: (a) hold the Disclosing Party's Confidential Information in strict confidence and protect it using at least the same degree of care it uses to protect its own confidential information of like importance, and in no event less than reasonable care; (b) use the Confidential Information solely for the Purpose and for no other purpose whatsoever; (c) not disclose Confidential Information to any third party except as expressly permitted by Section 5; and (d) promptly notify the Disclosing Party in writing upon becoming aware of any unauthorized use or disclosure of Confidential Information.
+
+4.2 The Receiving Party shall not reverse engineer, decompile, or disassemble any software, prototypes, or other tangible objects embodying the Disclosing Party's Confidential Information.
+
+4.3 The Receiving Party shall not use any customer personal data included in the Confidential Information except in compliance with applicable privacy and data protection laws and any data processing terms the Parties may separately agree.
+
+5. PERMITTED DISCLOSURES
+
+5.1 Representatives. The Receiving Party may disclose Confidential Information to its and its affiliates' directors, officers, employees, attorneys, accountants, and professional advisors (collectively, "Representatives") who (a) have a need to know such information for the Purpose, (b) have been informed of the confidential nature of the information, and (c) are bound by written or professional obligations of confidentiality no less protective than those contained herein. The Receiving Party shall be responsible for any breach of this Agreement by its Representatives.
+
+5.2 Compelled Disclosure. If the Receiving Party is required by law, regulation, subpoena, or order of a court or governmental authority to disclose Confidential Information, it may make such disclosure, provided that it (a) gives the Disclosing Party prompt written notice of the requirement (to the extent legally permitted) so that the Disclosing Party may seek a protective order or other appropriate remedy, (b) reasonably cooperates with the Disclosing Party's efforts, at the Disclosing Party's expense, to limit or contest the disclosure, and (c) discloses only that portion of the Confidential Information that it is legally required to disclose.
+
+6. TERM
+
+6.1 Term of Agreement. This Agreement shall commence on the Effective Date and shall continue until terminated by either Party upon thirty (30) days' prior written notice to the other Party.
+
+6.2 Survival of Confidentiality Obligations. The obligations of the Receiving Party under this Agreement with respect to Confidential Information shall survive for a period of three (3) years from the Effective Date, that is, until May 15, 2028; provided, however, that with respect to any Confidential Information that constitutes a trade secret under applicable law, such obligations shall continue for so long as such information remains a trade secret.
+
+7. NON-SOLICITATION
+
+7.1 During the term of this Agreement and for a period of one (1) year thereafter, neither Party shall, directly or indirectly, solicit for employment or engagement any employee of the other Party who was introduced to, or became known to, the soliciting Party in connection with the Purpose, without the prior written consent of the other Party. The foregoing shall not prohibit general solicitations of employment not specifically directed at such employees (including postings on public job boards) or the hiring of any person who responds thereto.
+
+8. RETURN OR DESTRUCTION OF MATERIALS
+
+8.1 Upon the written request of the Disclosing Party, or upon termination of this Agreement, the Receiving Party shall promptly, and in any event within thirty (30) days, return to the Disclosing Party or destroy (at the Disclosing Party's election) all documents and other tangible materials containing Confidential Information of the Disclosing Party, including all copies, extracts, and derivatives thereof, and shall certify such return or destruction in writing upon request.
+
+8.2 Notwithstanding Section 8.1, the Receiving Party may retain (a) one archival copy of Confidential Information solely for the purpose of establishing compliance with this Agreement, and (b) copies stored on automatic backup or archival systems in the ordinary course of business, provided that all retained information remains subject to the confidentiality obligations of this Agreement for so long as it is retained.
+
+9. NO LICENSE; NO OBLIGATION; NO WARRANTY
+
+9.1 All Confidential Information remains the property of the Disclosing Party. Nothing in this Agreement grants the Receiving Party any license or other right, by implication, estoppel, or otherwise, in or to any Confidential Information or any intellectual property of the Disclosing Party, except the limited right to use such information for the Purpose.
+
+9.2 Nothing in this Agreement obligates either Party to disclose any information, to negotiate, or to enter into any further agreement or business relationship. Each Party reserves the right, in its sole discretion, to terminate discussions at any time.
+
+9.3 ALL CONFIDENTIAL INFORMATION IS PROVIDED "AS IS." NEITHER PARTY MAKES ANY WARRANTY, EXPRESS OR IMPLIED, AS TO THE ACCURACY OR COMPLETENESS OF ITS CONFIDENTIAL INFORMATION.
+
+10. REMEDIES
+
+10.1 Each Party acknowledges that unauthorized use or disclosure of Confidential Information may cause the Disclosing Party irreparable harm for which monetary damages would be an inadequate remedy. Accordingly, the Disclosing Party shall be entitled to seek equitable relief, including injunction and specific performance, in the event of any breach or threatened breach of this Agreement, without the necessity of posting a bond, in addition to all other remedies available at law or in equity.
+
+11. GOVERNING LAW; JURISDICTION
+
+11.1 This Agreement shall be governed by and construed in accordance with the laws of the State of Delaware, without regard to its conflict of laws principles. Each Party irrevocably submits to the exclusive jurisdiction of the state and federal courts located in New Castle County, Delaware, for any action arising out of or relating to this Agreement, and waives any objection to venue in such courts.
+
+12. MISCELLANEOUS
+
+12.1 Notices. All notices under this Agreement shall be in writing and deemed given when delivered by hand, by nationally recognized overnight courier, or by email with confirmation of receipt, to the addresses set forth in the preamble, attention: Legal Department.
+
+12.2 Assignment. Neither Party may assign this Agreement without the prior written consent of the other Party, except to a successor in connection with a merger, acquisition, or sale of all or substantially all of its assets, provided the successor agrees in writing to be bound by this Agreement.
+
+12.3 Entire Agreement; Amendment. This Agreement constitutes the entire agreement between the Parties with respect to its subject matter and supersedes all prior and contemporaneous agreements and understandings, written or oral, relating thereto. This Agreement may be amended only by a written instrument signed by both Parties.
+
+12.4 Severability; Waiver. If any provision of this Agreement is held invalid or unenforceable, such provision shall be enforced to the maximum extent permissible and the remaining provisions shall remain in full force and effect. No failure or delay in exercising any right shall operate as a waiver thereof.
+
+12.5 Counterparts. This Agreement may be executed in counterparts, including by electronic signature, each of which shall be deemed an original and all of which together shall constitute one instrument.
+
+IN WITNESS WHEREOF, the Parties have executed this Agreement as of the Effective Date.
+
+BLUE HARBOR RETAIL, INC.
+
+By: /s/ Jonathan P. Leclair
+Name: Jonathan P. Leclair
+Title: General Counsel
+Date: May 15, 2025
+
+LIGHTHOUSE ANALYTICS CORP.
+
+By: /s/ Sofia M. Andersen
+Name: Sofia M. Andersen
+Title: Chief Operating Officer
+Date: May 15, 2025
