@@ -84,6 +84,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           })}
           <div className="sidefoot muted">
             English only · facts from documents, not legal advice
+            <br />
+            <Link href="/architecture" className="doclink">
+              How this is built ↗
+            </Link>
           </div>
         </nav>
         <main className="content">{children}</main>

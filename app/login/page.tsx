@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ROLES } from "@/lib/access";
 import type { Role } from "@/lib/types";
@@ -79,6 +80,11 @@ export default function LoginPage() {
         <p className="muted" style={{ fontSize: 12, marginBottom: 0 }}>
           Mock login — no password, the session lives in your browser.
           {session ? ` Currently signed in as ${session.name}; signing in again switches the role.` : ""}
+        </p>
+        <p className="muted" style={{ fontSize: 12, marginTop: 8, marginBottom: 0 }}>
+          <Link href="/architecture" className="doclink">
+            How this is built — architecture, RAG pipeline, data model ↗
+          </Link>
         </p>
       </div>
     </div>

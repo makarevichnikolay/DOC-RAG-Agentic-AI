@@ -139,3 +139,38 @@ select { border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px;
 .pipelinewrap { display: inline-flex; align-items: center; gap: 4px; }
 .pipestage { background: #fff; border: 1px solid var(--blue); color: var(--navy); border-radius: 8px; padding: 5px 14px; font-size: 12.5px; font-weight: 600; }
 .pipearrow { color: var(--muted); margin: 0 2px; }
+
+/* ---------- /architecture (public doc page) ---------- */
+.archtop { display: flex; align-items: center; gap: 10px; padding: 14px 20px; background: var(--navy); color: #fff; position: sticky; top: 0; z-index: 10; }
+.archtop .brandname { font-weight: 600; font-size: 14.5px; }
+.archtop .archback { margin-left: auto; color: #dfe7f4; text-decoration: none; font-size: 13px; border: 1px solid #3d5c92; padding: 5px 11px; border-radius: 8px; }
+.archtop .archback:hover { background: #2a4a80; }
+.archwrap { max-width: 1040px; margin: 0 auto; padding: 0 20px 90px; }
+.archhero { padding: 40px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 30px; }
+.archhero h1 { font-size: 30px; letter-spacing: -0.01em; }
+.archhero p.lead { font-size: 15px; color: var(--muted); max-width: 680px; margin: 10px 0 22px; line-height: 1.6; }
+.archtoc { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+.archtoc a { font-size: 12.5px; color: var(--ok); background: var(--light); border-radius: 8px; padding: 5px 10px; text-decoration: none; }
+.archtoc a:hover { text-decoration: underline; }
+.archsection { margin: 46px 0; scroll-margin-top: 70px; }
+.archsection h2 { font-size: 19px; color: var(--navy); margin: 0 0 6px; display: flex; align-items: center; gap: 9px; }
+.archsection .archno { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 7px; background: var(--navy); color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.archdesc { font-size: 13.5px; color: var(--muted); max-width: 760px; margin: 0 0 16px; line-height: 1.65; }
+.diagramcard { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 20px; overflow-x: auto; }
+.diagramcard svg { display: block; width: 100%; height: auto; min-width: 560px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+.archgrid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+@media (max-width: 860px) { .archgrid2 { grid-template-columns: 1fr; } }
+.stackgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }
+.stackitem { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: #fff; }
+.stackitem .k { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.stackitem .v { font-size: 13px; font-weight: 600; color: var(--navy); margin-top: 3px; line-height: 1.35; }
+.archlegend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 12px; }
+.archlegend .dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+.archnote { border-left: 3px solid var(--blue); background: var(--light); border-radius: 0 10px 10px 0; padding: 10px 14px; font-size: 12.5px; color: var(--navy); margin-top: 14px; line-height: 1.6; }
+.relbox { border: 1px solid var(--border); border-radius: 10px; background: #fff; font-size: 12px; }
+.relbox .relrow { display: flex; gap: 8px; padding: 6px 12px; border-top: 1px solid var(--border); }
+.relbox .relrow:first-child { border-top: none; }
+.relbox .relrow b { color: var(--navy); white-space: nowrap; }
+.relbox .relrow span.muted { flex: 1; }
+.archfoot { margin-top: 60px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+.archdesc code, .archnote code, .relbox code, .archfoot code { background: var(--light); border-radius: 4px; padding: 1px 5px; font-size: 12px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--navy); }
