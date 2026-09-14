@@ -18,7 +18,7 @@ type IngestResp = {
   error?: string;
 };
 
-type Engine = "openai" | "tesseract";
+type Engine = "cloud" | "tesseract";
 
 // Documents list + REAL OCR upload: a scanned page (PNG/JPG) or a .txt file is
 // recognized (OpenAI vision), the text is ingested into the client's live RAG
@@ -33,7 +33,7 @@ export default function DocumentsPage() {
   const [stage, setStage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<IngestResp | null>(null);
-  const [engine, setEngine] = useState<Engine>("openai");
+  const [engine, setEngine] = useState<Engine>("cloud");
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -86,7 +86,7 @@ export default function DocumentsPage() {
             disabled={busy}
             style={{ padding: "4px 6px", borderRadius: 6, border: "1px solid var(--border)" }}
           >
-            <option value="openai">OpenAI vision (cloud)</option>
+            <option value="cloud">Cloud vision (LLM_PROVIDER)</option>
             <option value="tesseract">Tesseract (local / on-prem)</option>
           </select>
         </label>

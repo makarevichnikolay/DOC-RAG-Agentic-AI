@@ -1,13 +1,19 @@
 // OCR / text recognition for uploaded documents.
 //
 // Two selectable engines:
-//   • "openai"    — OpenAI vision (gpt-4o-mini). Best quality; image is sent to the API.
+//   • "cloud"     — the vision model of whichever LLM_PROVIDER is configured
+//                   (OpenAI gpt-4o-mini, or Claude). Best quality; the image is
+//                   sent to that provider's API.
 //   • "tesseract" — Tesseract.js, fully local/in-process. Nothing leaves the box (on-prem).
 //
 // PDFs: if the file has a real text layer we extract it directly (no OCR needed);
 // if it is a scanned/image-only PDF we rasterize each page and OCR it with the chosen engine.
 
-export type OcrEngine = "openai" | "tesseract";
+import { transcribeImage } from "./providers";
+
+// "openai" is kept as an accepted alias so existing UI/query values keep working;
+// it now means "the configured cloud provider", which may be Anthropic.
+export type OcrEngine = "cloud" | "openai" | "tesseract";
 
 export type RecognizeResult = { text: string; engine: string };
 export type ExtractResult = RecognizeResult & { mode: string; pages: number };
@@ -20,40 +26,9 @@ export async function recognizeImage(
   engine: OcrEngine
 ): Promise<RecognizeResult> {
   if (engine === "tesseract") return recognizeTesseract(buf);
-  const dataUrl = `data:image/${mimeSub};base64,${buf.toString("base64")}`;
-  return recognizeOpenAI(dataUrl);
-}
-
-async function recognizeOpenAI(dataUrl: string): Promise<RecognizeResult> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("OPENAI_API_KEY is not set.");
-  const { default: OpenAI } = await import("openai");
-  const model = process.env.OCR_MODEL ?? "gpt-4o-mini";
-  const client = new OpenAI({ apiKey });
-  const res = await client.chat.completions.create({
-    model,
-    temperature: 0,
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are an OCR engine. Transcribe ALL text from the document image verbatim, " +
-          "preserving structure (headings, clause numbers, line breaks). " +
-          "Output plain text only — no commentary, no markdown fences.",
-      },
-      {
-        role: "user",
-        content: [
-          { type: "text", text: "Transcribe this scanned contract page." },
-          { type: "image_url", image_url: { url: dataUrl } },
-        ],
-      },
-    ],
-  });
-  return {
-    text: (res.choices[0]?.message?.content ?? "").trim(),
-    engine: `OpenAI vision (${model})`,
-  };
+  // Cloud OCR follows LLM_PROVIDER, so switching the app to Claude switches the
+  // whole pipeline rather than leaving OCR on OpenAI.
+  return transcribeImage(buf, mimeSub);
 }
 
 async function recognizeTesseract(buf: Buffer): Promise<RecognizeResult> {

@@ -21,8 +21,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid file name." }, { status: 400 });
   }
 
-  // Uploaded (OCR'd) documents live in memory, not on disk.
-  const uploaded = getUploadedDoc(clientId, file);
+  // Uploaded (OCR'd) documents are held by the vector store, not on disk.
+  const uploaded = await getUploadedDoc(clientId, file);
   if (uploaded) {
     return NextResponse.json({ file, text: uploaded.text, uploaded: true });
   }

@@ -141,7 +141,8 @@ export default function ArchitecturePage() {
             <PipelineDiagram />
           </div>
           <div className="archnote">
-            Guardrail threshold is <code>RELEVANCE_THRESHOLD = 0.28</code> (env-overridable) on the{" "}
+            Guardrail threshold defaults per embedding model (0.28 OpenAI, 0.32 local) and is
+            overridable with <code>RELEVANCE_THRESHOLD</code>, applied to the{" "}
             <em>best semantic score</em> across candidates — keyword hits alone never force an
             answer. If the model itself can&apos;t find the answer in context, that&apos;s also
             surfaced as a clean refusal, not a guess.

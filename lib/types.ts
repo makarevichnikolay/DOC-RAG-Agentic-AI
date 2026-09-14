@@ -11,8 +11,26 @@ export type Session = {
 export type Source = {
   file: string; // human title
   fileName: string; // actual file name on disk (for the document viewer)
-  score: number;
-  snippet: string;
+  /**
+   * Cosine similarity, or null when only BM25 found this chunk — a lexical-only
+   * hit has no semantic score, and showing 0 would read as "no confidence"
+   * for a chunk that was good enough to send to the model.
+   */
+  score: number | null;
+  snippet: string; // first 240 chars of the retrieved chunk, whitespace-collapsed
+  /**
+   * Length of the WHOLE retrieved chunk, in RAW characters (not whitespace-
+   * collapsed). The viewer adds it to a raw offset in the document, so a
+   * collapsed length would cut the highlight window short.
+   */
+  chunkChars: number;
+  /** Which half of hybrid retrieval surfaced this chunk. */
+  via: "semantic" | "lexical" | "both";
+  /** 1-based rank in each retriever's own list; null when it did not find it. */
+  semanticRank: number | null;
+  lexicalRank: number | null;
+  /** Fused score: Σ 1 / (k + rank_i). */
+  rrf: number;
 };
 
 export type QueryResult = {

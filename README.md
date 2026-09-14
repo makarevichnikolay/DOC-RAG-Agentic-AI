@@ -59,7 +59,9 @@ app/api/query/             POST { question, clientId } → scoped RAG answer
 app/api/portfolio/         POST { question } → per-client RAG answers (Admin)
 app/api/document/          GET  ?clientId&file → contract text (viewer, path-guarded)
 app/api/config/            GET  effective runtime params (Settings)
-lib/rag.ts                 per-client indexes, retrieval + guardrail + citations
+lib/rag.ts                 retrieval + hybrid rerank + guardrail + citations
+lib/providers.ts           LLM / embedding provider selection (OpenAI · Anthropic · Voyage)
+lib/vector-store.ts        vector store backends (in-memory · Postgres + pgvector)
 lib/clients.ts             tenant config (server) · lib/seeds.ts seed data (client)
 data/contracts/            Northwind Logistics contracts (real, SEC EDGAR)
 data/northwind-logistics/  seed.json + extra/ (upload-demo file)
@@ -68,13 +70,122 @@ data/blue-harbor-retail/   contracts/ + seed.json + extra/
 
 ## Settings (env)
 
+Three independent switches. Defaults reproduce the original behaviour, so an
+existing `.env.local` keeps working. See `.env.example` for the full list.
+
+| Var | Values | Default | Meaning |
+|-----|--------|---------|---------|
+| `LLM_PROVIDER` | `openai` \| `anthropic` | `openai` | Who writes the answer + does cloud OCR |
+| `EMBED_PROVIDER` | `openai` \| `voyage` \| `local` | `openai` | Who turns text into vectors |
+| `VECTOR_STORE` | `memory` \| `postgres` | `memory` | Where those vectors live |
+
+A vector store is **not** an embedding provider, and Anthropic has no embeddings
+API — so `LLM_PROVIDER=anthropic` still needs `EMBED_PROVIDER` underneath it.
+
 | Var | Default | Meaning |
 |-----|---------|---------|
-| `OPENAI_API_KEY` | — | required for live queries only |
-| `LLM_MODEL` | gpt-4o-mini | answer model |
-| `EMBED_MODEL` | text-embedding-3-small | embeddings |
+| `OPENAI_API_KEY` | — | needed if either provider is `openai` |
+| `ANTHROPIC_API_KEY` | — | needed if `LLM_PROVIDER=anthropic` |
+| `VOYAGE_API_KEY` | — | needed if `EMBED_PROVIDER=voyage` |
+| `LLM_MODEL` | gpt-4o-mini | OpenAI answer model |
+| `ANTHROPIC_MODEL` | claude-opus-5 | Claude answer model |
+| `ANTHROPIC_EFFORT` | unset | Claude reasoning depth (`low`…`max`); **not supported on Haiku 4.5** |
+| `EMBED_MODEL` | text-embedding-3-small | OpenAI embeddings |
+| `VOYAGE_MODEL` | voyage-3.5 | Voyage embeddings |
+| `LOCAL_EMBED_MODEL` | Xenova/all-MiniLM-L6-v2 | local model, no key |
+| `DATABASE_URL` | — | Postgres connection string (pgvector) |
 | `TOP_K` | 5 | retrieved chunks |
-| `RELEVANCE_THRESHOLD` | 0.28 | guardrail (below → refuse) |
+| `RELEVANCE_THRESHOLD` | per model | guardrail (below → refuse) |
+
+Current Claude models reject `temperature`/`top_p`, so the Anthropic path does
+not send them.
+
+`RELEVANCE_THRESHOLD` defaults **per embedding model**, because each produces a
+different cosine-score distribution: `0.28` for OpenAI and `0.32` for local
+(both measured on `data/contracts`); Voyage falls back to `0.28` but is
+unverified. The
+off-topic demo question sits close to the line, so a threshold borrowed from a
+different model can make the guardrail answer instead of refuse — re-check it
+with the Inspector panel after switching. Setting the env var overrides.
+
+### Local embeddings (no API key) — needs one extra install
+
+`EMBED_PROVIDER=local` runs a small model in-process via Transformers.js — no
+key, no network after the one-time ~90 MB weight download. Paired with the
+Tesseract OCR engine, the only thing that leaves the machine is the final
+question plus the retrieved excerpts. Retrieval quality is below OpenAI/Voyage;
+it is the on-prem option, not the best one.
+
+The package is **not installed by default** — it pulls onnxruntime and costs
+~680 MB, so `npm install` skips it:
+
+```bash
+npm run local:install
+```
+
+Without it, `EMBED_PROVIDER=local` fails at query time with a message telling you
+to run exactly that. The other providers are unaffected.
+
+The project ships an `.npmrc` with `omit=optional`, which is what actually keeps
+it out: `@llamaindex/env` declares `@huggingface/transformers` as a
+`peerOptional`, so npm installs it transitively unless optional deps are omitted.
+That flag also skips `sharp`'s per-platform binaries (~750 MB), which this app
+never uses — a plain `npm install` drops from ~1.8 GB to ~350 MB.
+
+### Vector store
+
+`memory` keeps one LlamaIndex index per client in RAM; everything is re-embedded
+on the first query after each restart. `postgres` stores vectors in PostgreSQL
+via `pgvector` — one `chunks_<client_id>` table per client, each with its own
+HNSW cosine index — and re-embeds a client only when its contracts change or the
+embedding model changes. Uploaded documents survive a restart under `postgres`,
+not under `memory`.
+
+Client isolation holds in both: separate index per client in memory, separate
+table per client in Postgres. There is no shared collection, so there is no
+`WHERE client_id = ?` that can be forgotten.
+
+#### Postgres setup — the pgvector extension is required
+
+`VECTOR_STORE=postgres` needs the **pgvector** extension. It does not ship with
+PostgreSQL; without it the first query fails with
+`extension "vector" is not available`.
+
+**Option 1 — Docker (nothing to install on the host):**
+
+```bash
+docker run -d --name pgvector -e POSTGRES_PASSWORD=postgres \
+  -p 5432:5432 pgvector/pgvector:pg16
+```
+
+The image has the extension built in; the app creates it on first use.
+
+**Option 2 — an existing PostgreSQL server.** Install the package matching your
+server's major version (`psql -V` to check), then enable it in the database named
+in `DATABASE_URL`:
+
+```bash
+# Debian / Ubuntu — replace 17 with your major version
+sudo apt install postgresql-17-pgvector
+
+# macOS (Homebrew)
+brew install pgvector
+
+# then, once per database:
+psql -U postgres -d your_database -c "CREATE EXTENSION vector;"
+```
+
+No restart is needed. Verify with:
+
+```bash
+psql -U postgres -d your_database -c \
+  "SELECT extversion FROM pg_extension WHERE extname='vector';"
+```
+
+The app also runs `CREATE EXTENSION IF NOT EXISTS vector` itself, so the manual
+`CREATE EXTENSION` is only needed when the app's database role lacks permission
+to create extensions — which is the normal case on managed Postgres (Neon,
+Supabase, RDS). Those also generally require `PGSSL=require`.
 
 ## Principles
 

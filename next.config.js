@@ -5,7 +5,12 @@ const nextConfig = {
     serverComponentsExternalPackages: [
       "llamaindex",
       "@llamaindex/openai",
+      "@llamaindex/voyage-ai",
       "openai",
+      "@anthropic-ai/sdk",
+      "pg",
+      "pgvector",
+      "@huggingface/transformers",
       "unpdf",
       "pdf-to-img",
       "tesseract.js",
