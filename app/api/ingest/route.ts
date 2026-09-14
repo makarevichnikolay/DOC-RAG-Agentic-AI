@@ -16,9 +16,7 @@ export async function POST(req: NextRequest) {
     const form = await req.formData();
     const clientId = String(form.get("clientId") || "");
     const engine: OcrEngine =
-      String(form.get("engine") || "openai") === "tesseract"
-        ? "tesseract"
-        : "openai";
+      String(form.get("engine") || "cloud") === "tesseract" ? "tesseract" : "cloud";
     const file = form.get("file");
 
     if (!clientId) {

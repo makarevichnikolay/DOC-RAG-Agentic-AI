@@ -6,11 +6,17 @@ import { canAccess } from "@/lib/access";
 import { useApp } from "../../providers";
 
 type Config = {
+  llmProvider: string;
   llmModel: string;
+  embedProvider: string;
   embedModel: string;
+  vectorStore: string;
+  vectorStoreTarget: string | null;
   topK: number;
   relevanceThreshold: number;
+  thresholdSource: string;
   apiKeyConfigured: boolean;
+  missingKeys: string[];
 };
 
 // Settings (Admin): effective runtime parameters (read-only) + session audit log.
@@ -19,12 +25,19 @@ export default function SettingsPage() {
   const router = useRouter();
   const session = app.session;
   const [config, setConfig] = useState<Config | null>(null);
+  const [configError, setConfigError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/config")
-      .then((r) => r.json())
-      .then((c) => setConfig(c as Config))
-      .catch(() => setConfig(null));
+      .then(async (r) => {
+        const data = await r.json();
+        // The route answers 400 with a readable message for an invalid provider
+        // value. Without this check `config` would be an object of undefineds
+        // and the table below would throw on missingKeys.join().
+        if (!r.ok) throw new Error(data.error || "Failed to load configuration");
+        setConfig(data as Config);
+      })
+      .catch((e) => setConfigError(e.message));
   }, []);
 
   if (!session || !canAccess(session.role, "settings")) {
@@ -38,11 +51,27 @@ export default function SettingsPage() {
 
   const rows: [string, string][] = config
     ? [
+        ["LLM provider (LLM_PROVIDER)", config.llmProvider],
         ["LLM model", config.llmModel],
+        ["Embedding provider (EMBED_PROVIDER)", config.embedProvider],
         ["Embedding model", config.embedModel],
+        [
+          "Vector store (VECTOR_STORE)",
+          config.vectorStore === "postgres"
+            ? `postgres + pgvector — ${config.vectorStoreTarget} (persisted)`
+            : "in-memory (rebuilt on restart)",
+        ],
         ["TOP_K (retrieved chunks)", String(config.topK)],
-        ["Relevance threshold (guardrail)", String(config.relevanceThreshold)],
-        ["OpenAI API key", config.apiKeyConfigured ? "configured" : "NOT configured — live queries will fail"],
+        [
+          "Relevance threshold (guardrail)",
+          `${config.relevanceThreshold} (${config.thresholdSource})`,
+        ],
+        [
+          "API keys",
+          config.apiKeyConfigured
+            ? "configured"
+            : `NOT configured — live queries will fail (missing: ${config.missingKeys.join(", ")})`,
+        ],
       ]
     : [];
 
@@ -57,7 +86,8 @@ export default function SettingsPage() {
         <div className="card">
           <div className="cardtitle">Runtime parameters</div>
           <div className="cardbody">
-            {!config && <span className="muted">Loading…</span>}
+            {configError && <div className="errorbox">⚠ {configError}</div>}
+            {!config && !configError && <span className="muted">Loading…</span>}
             {config && (
               <table>
                 <tbody>

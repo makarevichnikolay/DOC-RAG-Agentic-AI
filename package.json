@@ -5,14 +5,19 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "local:install": "npm install --no-save --include=optional @huggingface/transformers@^3.5.0"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
     "@llamaindex/openai": "0.4.23",
+    "@llamaindex/voyage-ai": "^1.0.29",
     "llamaindex": "0.12.1",
     "next": "14.2.5",
     "openai": "^6.46.0",
     "pdf-to-img": "^6.2.0",
+    "pg": "^8.23.0",
+    "pgvector": "^0.3.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "tesseract.js": "^7.0.0",
@@ -20,8 +25,20 @@
   },
   "devDependencies": {
     "@types/node": "20.14.10",
+    "@types/pg": "^8.23.1",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "typescript": "5.5.4"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "peerDependenciesMeta": {
+    "@huggingface/transformers": {
+      "optional": true
+    }
+  },
+  "peerDependencies": {
+    "@huggingface/transformers": "^3.5.0"
   }
 }

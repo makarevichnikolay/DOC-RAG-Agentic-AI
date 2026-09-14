@@ -46,12 +46,12 @@ export default function EvalsPage() {
           into vectors (indexing).
         </div>
         <div>
-          <strong>retrieve</strong> — the most relevant fragments are pulled for
-          the question.
+          <strong>retrieve</strong> — TWO searches run over the same chunks:
+          semantic (embeddings) and lexical (BM25).
         </div>
         <div>
-          <strong>rerank</strong> — they are re-ordered (our hybrid rerank:
-          semantics + keywords).
+          <strong>rerank</strong> — the two rankings are merged with Reciprocal
+          Rank Fusion: RRF(d) = Σ 1 / (k + rank), k=60.
         </div>
         <div>
           <strong>generate</strong> — the model composes the answer only from
@@ -95,13 +95,22 @@ export default function EvalsPage() {
             </div>
             {lq.result.sources.map((s, i) => (
               <div className="src" key={i}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                   <span>“{s.file}”</span>
-                  <span style={{ color: "var(--ok)", fontWeight: 500 }}>{s.score}</span>
+                  <span className="muted" style={{ fontSize: 11 }}>
+                    {s.via === "both"
+                      ? `semantic #${s.semanticRank} + lexical #${s.lexicalRank}`
+                      : s.via === "semantic"
+                        ? `semantic #${s.semanticRank}`
+                        : `lexical #${s.lexicalRank} (BM25 only)`}
+                  </span>
+                  <span style={{ color: "var(--ok)", fontWeight: 500 }}>{s.score ?? "—"}</span>
                 </div>
-                <div className="bar">
-                  <i style={{ width: `${Math.min(100, Math.round(s.score * 100))}%` }} />
-                </div>
+                {s.score !== null && (
+                  <div className="bar">
+                    <i style={{ width: `${Math.min(100, Math.round(s.score * 100))}%` }} />
+                  </div>
+                )}
                 <div className="muted" style={{ marginTop: 6 }}>
                   {s.snippet}…
                 </div>

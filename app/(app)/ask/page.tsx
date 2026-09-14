@@ -57,33 +57,50 @@ function quotedPhrases(s: string): string[] {
     .filter(Boolean);
 }
 
-// Highlight the document line that best matches the ANSWER (not merely the top
-// retrieved chunk) — so clicking a citation lands on the text the answer used.
+// Highlight the citation the user clicked.
+//
+// Two steps, in this order — the order is the whole point:
+//   1. Locate the chunk that retrieval ACTUALLY returned, by searching for the
+//      snippet. The snippet is a literal copy of the chunk's opening, so this is
+//      an exact lookup, not a guess.
+//   2. Inside that chunk only, pick the line that best matches the answer, so the
+//      jump lands on the precise clause rather than the top of a long chunk.
+//
+// Step 2 used to run over the WHOLE document, with step 1 as a fallback. That
+// let a citation land anywhere: asked about renewal, the scorer highlighted an
+// insurance clause in a different contract simply because it shared the words
+// "deliver", "notice", "renewal" and "days". Scoring can now only ever choose
+// between lines that were genuinely retrieved.
 function bestHighlight(
   text: string,
   answer: string,
-  snippet: string
+  snippet: string,
+  chunkChars: number
 ): { start: number; end: number } | null {
+  const chunk = locateSnippet(text, snippet);
+  if (!chunk) return null; // snippet isn't in this document — highlight nothing
+
+  // The snippet match only covers the chunk's opening; extend to the full chunk.
+  const chunkStart = chunk.start;
+  const chunkEnd = Math.min(text.length, chunkStart + Math.max(chunkChars, snippet.length));
+
   const body = answer.split(/\(\s*source/i)[0];
-  const title = (text.split("\n").find((l) => l.trim().length > 0) || "")
-    .trim()
-    .toLowerCase();
   const weights = new Map<string, number>();
   for (const t of contentTokens(body)) {
     const w = /\d/.test(t) ? 7 : Math.min(t.length, 10);
     weights.set(t, Math.max(weights.get(t) || 0, w));
   }
-  const phrases = quotedPhrases(body).filter(
-    (p) => !(title.includes(p) && p.length > 12)
-  );
+  const phrases = quotedPhrases(body);
+
   let off = 0;
   let best: { start: number; end: number } | null = null;
   let bestScore = 0;
   for (const ln of text.split("\n")) {
-    const low = ln.toLowerCase();
     const start = off;
     const end = off + ln.length;
     off = end + 1;
+    if (start < chunkStart || end > chunkEnd) continue; // outside the retrieved chunk
+    const low = ln.toLowerCase();
     if (low.trim().length < 4) continue;
     let s = 0;
     for (const [t, w] of weights) if (low.includes(t)) s += w;
@@ -93,11 +110,20 @@ function bestHighlight(
       best = { start, end };
     }
   }
+
+  // A confident line inside the chunk, else the chunk itself — either way the
+  // highlight stays within text that was really retrieved.
   if (best && bestScore >= 7) return best;
-  return locateSnippet(text, snippet);
+  return { start: chunkStart, end: chunkEnd };
 }
 
-type Selected = { fileName: string; title: string; snippet: string; key: string };
+type Selected = {
+  fileName: string;
+  title: string;
+  snippet: string;
+  chunkChars: number;
+  key: string;
+};
 
 // One citation per distinct document (keep the highest-scoring chunk per doc).
 // Raw per-chunk retrieval stays visible in the Inspector.
@@ -180,7 +206,13 @@ export default function AskPage() {
 
   function selectCitation(s: Source, i: number) {
     if (!s.fileName) return;
-    setSelected({ fileName: s.fileName, title: s.file, snippet: s.snippet, key: `${s.fileName}-${i}` });
+    setSelected({
+      fileName: s.fileName,
+      title: s.file,
+      snippet: s.snippet,
+      chunkChars: s.chunkChars,
+      key: `${s.fileName}-${i}`,
+    });
   }
 
   // Load the selected document into the right pane.
@@ -214,7 +246,7 @@ export default function AskPage() {
 
   let viewerContent: React.ReactNode = null;
   if (docText && selected) {
-    const loc = bestHighlight(docText, result?.answer ?? "", selected.snippet);
+    const loc = bestHighlight(docText, result?.answer ?? "", selected.snippet, selected.chunkChars);
     if (loc) {
       viewerContent = (
         <>
@@ -305,7 +337,7 @@ export default function AskPage() {
                         title="Open the document at this fragment (right pane)"
                         onClick={() => selectCitation(s, i)}
                       >
-                        “{s.file}” · score {s.score} →
+                        “{s.file}” · score {s.score ?? "BM25"} →
                       </button>
                     ))}
                   </div>
@@ -331,15 +363,24 @@ export default function AskPage() {
                   </div>
                   {result.sources.map((s, i) => (
                     <div className="src" key={i}>
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                         <span>“{s.file}”</span>
+                        <span className="muted" style={{ fontSize: 11 }}>
+                          {s.via === "both"
+                            ? `semantic #${s.semanticRank} + lexical #${s.lexicalRank}`
+                            : s.via === "semantic"
+                              ? `semantic #${s.semanticRank}`
+                              : `lexical #${s.lexicalRank} (BM25 only)`}
+                        </span>
                         <span style={{ color: "var(--ok)", fontWeight: 500 }}>
-                          {s.score}
+                          {s.score ?? "—"}
                         </span>
                       </div>
-                      <div className="bar">
-                        <i style={{ width: `${Math.min(100, Math.round(s.score * 100))}%` }} />
-                      </div>
+                      {s.score !== null && (
+                        <div className="bar">
+                          <i style={{ width: `${Math.min(100, Math.round(s.score * 100))}%` }} />
+                        </div>
+                      )}
                       <div className="muted" style={{ marginTop: 6 }}>
                         {s.snippet}…
                       </div>
