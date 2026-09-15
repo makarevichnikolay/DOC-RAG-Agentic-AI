@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "local:install": "npm install --no-save --include=optional @huggingface/transformers@^3.5.0"
+    "start": "next start"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",
@@ -29,9 +28,6 @@
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "typescript": "5.5.4"
-  },
-  "engines": {
-    "node": ">=24"
   },
   "peerDependenciesMeta": {
     "@huggingface/transformers": {
