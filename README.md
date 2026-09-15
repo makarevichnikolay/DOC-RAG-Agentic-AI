@@ -108,7 +108,7 @@ off-topic demo question sits close to the line, so a threshold borrowed from a
 different model can make the guardrail answer instead of refuse — re-check it
 with the Inspector panel after switching. Setting the env var overrides.
 
-### Local embeddings (no API key) — needs one extra install
+### Local embeddings (no API key)
 
 `EMBED_PROVIDER=local` runs a small model in-process via Transformers.js — no
 key, no network after the one-time ~90 MB weight download. Paired with the
@@ -116,21 +116,16 @@ Tesseract OCR engine, the only thing that leaves the machine is the final
 question plus the retrieved excerpts. Retrieval quality is below OpenAI/Voyage;
 it is the on-prem option, not the best one.
 
-The package is **not installed by default** — it pulls onnxruntime and costs
-~680 MB, so `npm install` skips it:
+`@huggingface/transformers` is declared as an optional peer dependency, but npm
+installs it anyway because `@llamaindex/env` also declares it as a `peerOptional`
+— so it works out of the box, at the cost of ~680 MB of `node_modules`
+(onnxruntime ships prebuilt binaries).
 
-```bash
-npm run local:install
-```
-
-Without it, `EMBED_PROVIDER=local` fails at query time with a message telling you
-to run exactly that. The other providers are unaffected.
-
-The project ships an `.npmrc` with `omit=optional`, which is what actually keeps
-it out: `@llamaindex/env` declares `@huggingface/transformers` as a
-`peerOptional`, so npm installs it transitively unless optional deps are omitted.
-That flag also skips `sharp`'s per-platform binaries (~750 MB), which this app
-never uses — a plain `npm install` drops from ~1.8 GB to ~350 MB.
+> **Do not add `omit=optional` to `.npmrc` to shrink that.** It also skips
+> `@next/swc-*`, which are optional dependencies of Next.js, and the build then
+> fails with `Failed to load SWC binary`. A full `npm ci` is ~1.8 GB; the
+> deployed serverless functions are ~51 MB, because Next only traces what is
+> actually imported and the local-embeddings path is loaded dynamically.
 
 ### Vector store
 
