@@ -12,6 +12,7 @@ Built to `docs/Prototype_requirements_v1.pdf`. English only.
 | Component | Status |
 |---|---|
 | Q&A: retrieval, citations, guardrail, Inspector | **REAL** — live RAG per client (`/ask`) |
+| Evals against the golden sets | **REAL** — `Run evals` on `/evals`, or `npm run evals` |
 | Client isolation (scoped retrieval) | **REAL** — separate in-memory index per client |
 | Portfolio cross-client query (Admin) | **REAL** — same pipeline over every client's index (`/portfolio`) |
 | Login & roles | MOCK — pick a role, no password (cookie session) |
@@ -60,6 +61,10 @@ app/api/portfolio/         POST { question } → per-client RAG answers (Admin)
 app/api/document/          GET  ?clientId&file → contract text (viewer, path-guarded)
 app/api/config/            GET  effective runtime params (Settings)
 lib/rag.ts                 retrieval + hybrid rerank + guardrail + citations
+lib/chunking.ts            clause-aware splitting + embedding-model size cap
+lib/evals.ts               executable golden-set evals (deterministic + LLM judge)
+app/api/evals/             POST { clientId, judge } -> a measured EvalRun
+scripts/evals.mjs          CLI runner; exits non-zero on failure
 lib/providers.ts           LLM / embedding provider selection (OpenAI · Anthropic · Voyage)
 lib/vector-store.ts        vector store backends (in-memory · Postgres + pgvector)
 lib/clients.ts             tenant config (server) · lib/seeds.ts seed data (client)
@@ -181,6 +186,160 @@ The app also runs `CREATE EXTENSION IF NOT EXISTS vector` itself, so the manual
 `CREATE EXTENSION` is only needed when the app's database role lacks permission
 to create extensions — which is the normal case on managed Postgres (Neon,
 Supabase, RDS). Those also generally require `PGSSL=require`.
+
+## Chunking
+
+Contracts are numbered clauses, not prose, so they are split on clause
+boundaries (`2.2`, `9.16.3`, `ARTICLE 4`) rather than every N tokens. Oversized
+clauses are subdivided — sub-clauses `(a)`/`(ii)`, then paragraphs, then
+sentences — and thin fragments (table-of-contents lines, one-line definitions)
+are merged back into their neighbours.
+
+Measured on the bundled contracts:
+
+| | SentenceSplitter | clause-aware (cap 1500) |
+| --- | --- | --- |
+| chunks (`data/contracts`) | 54 | 274 |
+| median chunk | 4,725 chars | ~650 chars |
+| largest chunk | 5,526 chars | 1,500 chars |
+| **chunks over the local model's 512-token limit** | **53 of 54** | **0 of 274** |
+| avg context sent to the model per question | 22,466 chars | ~4,300 chars |
+
+That last-but-one row is the important one. Embedding models truncate silently:
+a 4,680-char chunk tokenises to 1,002 tokens, and on `all-MiniLM-L6-v2` its
+vector is identical (cosine `1.000000`) to the vector of just its first 512
+tokens. The back half of almost every chunk was invisible to semantic search.
+BM25 still indexed it, which is part of why hybrid retrieval helped so much.
+
+Two invariants the splitter must keep:
+
+1. **Every chunk is a verbatim, contiguous substring of its document.** The
+   source viewer finds a chunk by searching the document for its snippet, so a
+   chunk with a synthetic heading prefix would never be located and the citation
+   highlight would silently disappear.
+2. **No chunk exceeds `MAX_CHUNK_CHARS`** (see `.env.example`).
+
+Both are asserted against every bundled contract, along with losslessness —
+concatenating a document's chunks reproduces the document.
+
+**Chunk overlap was tried and removed.** Carrying 200 characters of the next
+clause into each chunk was worse on every measured axis (evidence coverage
+61% → 56%, and it degraded guardrail separation). Duplicated text inflates BM25
+document lengths and blurs the boundaries the split exists to sharpen. See the
+comment in `lib/chunking.ts` before re-adding it.
+
+**Neighbour expansion** (`lib/neighbours.ts`) closes the gap that clause
+splitting opened. Clauses that used to share a chunk no longer do, and contracts
+are full of clauses that only make sense beside their neighbour — clause 6.2
+opens "Following the expiry of the 10 year period referred to in Article 6.1.
+above", never says "warehouse" or "lease term", and ranks #62 of 274 while 6.1
+ranks #1. So after retrieval, the top `NEIGHBOUR_TOP_N` hits also contribute the
+chunk either side.
+
+Measured on the 8 northwind goldens:
+
+| | target clauses found | avg context |
+| --- | --- | --- |
+| widen the candidate pool 15 → 30 → 80 | 0 of 2 | ~3,800 chars |
+| neighbours, topN=2 | 1 of 2 | 6,347 chars |
+| **neighbours, topN=3 (default)** | **2 of 2** | **7,082 chars** |
+| neighbours, topN=5 | 2 of 2 | 9,045 chars |
+| whole parent section | 2 of 2 | 10,367 chars |
+
+Searching harder does not work: at a pool of 80 both clauses are still missed,
+because neither looks like the question. Parent sections work but have no size
+ceiling — one section in `data/contracts` is 14,249 characters. Neighbours are
+bounded by `MAX_CHUNK_CHARS`, so ±1 adds a predictable amount.
+
+Neighbours appear in the Inspector as `neighbour of #N (not retrieved)`, with no
+score, because retrieval genuinely did not find them.
+
+## Evals
+
+`/evals` has a **Run evals** button that puts every golden question through the
+real pipeline. Before pressing it the page shows `—` in all four metric slots and
+`not run` in every Status cell. Nothing is asserted that has not been measured.
+
+The four invented constants that used to sit there (faithfulness 0.96, citation
+accuracy 0.94, answer relevance 0.92, hallucination 0.008) are gone from both
+`/evals` and the public `/architecture` page. Labelling them "seed" was not
+enough: on pages whose subject is measured quality, a number nobody computed is
+worth less than no number.
+
+Also runnable from the terminal, exiting non-zero on any failure:
+
+```bash
+npm run dev                  # in one shell
+npm run evals                # both clients
+npm run evals -- --no-judge  # skip grading — halves the LLM calls, does not remove them
+npm run evals -- --client=blue-harbor-retail
+```
+
+Five things are measured, and they differ in how much you should trust them:
+
+| Check | How | Trust |
+| --- | --- | --- |
+| **Refusal** — is the off-topic probe refused, and are real questions answered? | exact | total |
+| **Citation validity** — is each cited snippet findable in the document it names? | exact | total |
+| **Correct document** — was the document the golden names among the sources? | exact | total |
+| **Correctness** — does the answer state the expected facts? | LLM judge | good, not perfect |
+| **Faithfulness** — is every claim supported by the retrieved excerpts? | LLM judge | good, not perfect |
+
+Deterministic checks come first on principle: anything a substring comparison can
+decide is decided that way, because it is free, instant and reproducible. The
+judge is reserved for the one question that needs reading comprehension.
+
+**What a run costs.** Two LLM calls per question — one to answer it, one to grade
+it — so the full 14-question set across both clients is ~24 calls (the two
+guardrail probes are refused before any answer is generated, so they cost
+nothing). `--no-judge` skips the grading call, halving that to ~12; it does
+**not** make the run free, because answering the question is itself a call.
+Embeddings are free when `EMBED_PROVIDER=local`, since the model runs in-process.
+
+The judge follows the usual guidance — discrete labels rather than a 1-10 score,
+reasoning written before the verdict, and correctness graded separately from
+faithfulness so a *lucky* hallucination (right answer, unsupported by the
+excerpts) stays visible instead of being averaged away.
+
+**Three caveats, stated rather than buried.** By default the judge is the same
+model that wrote the answer, and models favour their own output — escape that
+with `EVAL_JUDGE_PROVIDER` **and** `EVAL_JUDGE_MODEL` together, since changing
+vendor is the point and the model id alone goes to whichever SDK `LLM_PROVIDER`
+picked. The judge is also not deterministic: successive runs of the same set have
+graded 3 vs 4 questions `correct`, so treat single-point movements as noise. And
+when a judge call fails outright the question is reported as **ungraded** rather
+than failed — it still passes its deterministic checks, so the summary counts
+those separately to keep a judge outage from reading as a clean run.
+
+Every run prints the configuration it ran under (provider, models, vector store,
+chunker, `TOP_K`, threshold). A pass rate without that is not comparable to
+anything.
+
+## The relevance guardrail, honestly
+
+Retrieval refuses to answer when the best semantic score falls below
+`RELEVANCE_THRESHOLD`. Measured over 12 golden and 4 off-topic questions with
+`EMBED_PROVIDER=local`, the two populations **overlap**:
+
+```
+lowest relevant score   0.448   "Which state's law governs the NDA…"
+highest off-topic score 0.546   "What is the personal phone number of the CFO?"
+```
+
+No threshold separates them. The CFO question scores 0.546 because every
+contract carries a notices clause full of names, addresses and phone numbers —
+it genuinely is close to the documents in meaning.
+
+The default of **0.42** is the best operating point found: it refuses 3 of the 4
+off-topic questions and wrongly refuses **0 of 12** goldens. The fourth is caught
+by the model's grounded refusal, which is what actually holds the line. The score
+guardrail is a coarse first filter; do not present it as a guarantee.
+
+This also corrected a stale number. The previous 0.32 was calibrated against a
+single probe question and against the old 4,700-char chunks; under clause-aware
+chunking it would have wrongly *allowed* 3 of the 4 off-topic questions. The
+`openai` and `voyage` thresholds have **not** been re-measured since — see the
+note in `lib/providers.ts`.
 
 ## Principles
 

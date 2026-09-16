@@ -1,13 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { EVAL_METRICS } from "@/lib/seeds";
+import { GOLDEN_SET_SIZE } from "@/lib/seeds";
 import {
   SystemDiagram,
   PipelineDiagram,
   IngestionDiagram,
   IsolationDiagram,
   ErdDiagram,
-  MetricsChart,
   StatusChart,
 } from "./diagrams";
 
@@ -245,19 +244,45 @@ export default function ArchitecturePage() {
             <span className="archno">6</span>Quality metrics &amp; what&apos;s real vs mock
           </h2>
           <p className="archdesc">
-            Metrics below are evaluated offline against the {EVAL_METRICS.goldenSetSize}-question
-            golden set across both clients (last run {EVAL_METRICS.lastRun}) — seeded constants in
-            this demo, shown on the live Inspector &amp; Evals screen. The retrieval/generation
-            pipeline they describe is real and running.
+            Quality is <b>measured on demand</b>, not asserted here. This page used to
+            chart four invented constants; they have been removed, because a number
+            nobody computed is worth less than no number. <b>Run evals</b> on the
+            Inspector &amp; Evals screen puts the active client&apos;s golden questions
+            through the real pipeline; <code>npm run evals</code> covers all{" "}
+            {GOLDEN_SET_SIZE} across both clients.
           </p>
           <div className="archgrid2">
             <div className="diagramcard">
-              <MetricsChart
-                faithfulness={EVAL_METRICS.faithfulness}
-                citationAccuracy={EVAL_METRICS.citationAccuracy}
-                answerRelevance={EVAL_METRICS.answerRelevance}
-                hallucinationRate={EVAL_METRICS.hallucinationRate}
-              />
+              <div className="klabel" style={{ marginBottom: 8 }}>
+                What a run measures
+              </div>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, lineHeight: 1.8 }}>
+                <li>
+                  <b>Refusal</b> — the off-topic probe must be refused, real questions
+                  must be answered. <i>Exact.</i>
+                </li>
+                <li>
+                  <b>Citation validity</b> — every cited snippet must be findable in the
+                  document it names. <i>Exact.</i>
+                </li>
+                <li>
+                  <b>Correct document</b> — the document the golden names must be among
+                  the sources. <i>Exact.</i>
+                </li>
+                <li>
+                  <b>Correctness</b> — does the answer state the expected facts?{" "}
+                  <i>LLM judge.</i>
+                </li>
+                <li>
+                  <b>Faithfulness</b> — is every claim supported by the retrieved
+                  excerpts? <i>LLM judge.</i>
+                </li>
+              </ul>
+              <div className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+                Each run records the provider, models, vector store, chunker, TOP_K and
+                guardrail threshold it ran under — a pass rate without them is not
+                comparable to anything.
+              </div>
             </div>
             <div className="diagramcard">
               <div className="klabel" style={{ marginBottom: 8 }}>

@@ -154,7 +154,7 @@
       "source": "Doc 2, Art. 6"
     },
     {
-      "q": "What is the warehouse rent per m2?",
+      "q": "What is the warehouse and office rent per m2?",
       "expected": "EUR 3.70 per m2 for warehouse space and EUR 7.50 per m2 for office space.",
       "source": "Doc 2, Art. 4-5"
     },

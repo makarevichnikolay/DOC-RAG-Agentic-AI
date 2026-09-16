@@ -16,12 +16,9 @@ export function getSeed(clientId: string): ClientSeed {
   return SEEDS.find((s) => s.clientId === clientId) ?? SEEDS[0];
 }
 
-// Seed metrics for the Evals panel (computed offline on the golden sets — SEED, not live).
-export const EVAL_METRICS = {
-  lastRun: "2026-07-08",
-  goldenSetSize: SEEDS.reduce((n, s) => n + s.goldens.length, 0),
-  faithfulness: 0.96,
-  citationAccuracy: 0.94,
-  answerRelevance: 0.92,
-  hallucinationRate: 0.008,
-};
+// The four seeded quality metrics that used to live here (faithfulness 0.96,
+// citation accuracy 0.94, answer relevance 0.92, hallucination 0.008) are gone.
+// They were invented, and labelling them "seed" was not enough on a page whose
+// whole purpose is to show measured quality. Real numbers come from lib/evals.ts
+// — "Run evals" on /evals, or `npm run evals`.
+export const GOLDEN_SET_SIZE = SEEDS.reduce((n, s) => n + s.goldens.length, 0);
