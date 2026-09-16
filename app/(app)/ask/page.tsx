@@ -370,7 +370,9 @@ export default function AskPage() {
                             ? `semantic #${s.semanticRank} + lexical #${s.lexicalRank}`
                             : s.via === "semantic"
                               ? `semantic #${s.semanticRank}`
-                              : `lexical #${s.lexicalRank} (BM25 only)`}
+                              : s.via === "neighbour"
+                                ? `neighbour of #${s.neighbourOfRank} (not retrieved)`
+                                : `lexical #${s.lexicalRank} (BM25 only)`}
                         </span>
                         <span style={{ color: "var(--ok)", fontWeight: 500 }}>
                           {s.score ?? "—"}

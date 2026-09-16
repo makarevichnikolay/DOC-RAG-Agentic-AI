@@ -174,3 +174,6 @@ select { border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px;
 .relbox .relrow span.muted { flex: 1; }
 .archfoot { margin-top: 60px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
 .archdesc code, .archnote code, .relbox code, .archfoot code { background: var(--light); border-radius: 4px; padding: 1px 5px; font-size: 12px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--navy); }
+
+/* Eval failures. The okchip/warnchip pair had no "this is broken" variant. */
+.failchip { color: #8a1c1c; border-color: #e0b4b4; background: #fdeeee; }

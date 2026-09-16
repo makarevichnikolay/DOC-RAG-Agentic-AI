@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "local:install": "npm install --no-save --include=optional @huggingface/transformers@^3.5.0",
+    "evals": "node scripts/evals.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",

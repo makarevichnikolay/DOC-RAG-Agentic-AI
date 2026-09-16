@@ -14,7 +14,8 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { Document, SentenceSplitter, TextNode, VectorStoreIndex } from "llamaindex";
+import { TextNode, VectorStoreIndex } from "llamaindex";
+import { CHUNKER_VERSION, maxChunkChars, splitDocument } from "./chunking";
 import {
   configureEmbeddings,
   embedModelName,
@@ -92,7 +93,12 @@ function readContracts(cfg: ClientConfig): {
     })
     .join("|");
 
-  return { docs, fingerprint: `${embedProvider()}:${embedModelName()}::${stamp}` };
+  return {
+    docs,
+    // The chunker is part of the fingerprint: changing how documents are split
+    // changes what is stored, so an existing Postgres index must be rebuilt.
+    fingerprint: `${embedProvider()}:${embedModelName()}:${CHUNKER_VERSION}:${maxChunkChars()}::${stamp}`,
+  };
 }
 
 // =====================================================================
@@ -120,22 +126,20 @@ class MemoryStore implements ClientStore {
 
   private async build(): Promise<VectorStoreIndex> {
     await configureEmbeddings();
-    // Split HERE rather than letting fromDocuments do it. fromDocuments uses
-    // `effectiveChunkSize = chunkSize - metadataLength`, so its chunk boundaries
-    // differ from a plain splitText() — on a real contract, 31 chunks vs 29.
-    // That mismatch made every lexical hit look like a different chunk from the
-    // semantic hit covering the same text, so RRF could never reinforce a chunk
-    // found by both retrievers. Owning the split keeps the two halves aligned.
+    // Split HERE rather than letting fromDocuments do it. fromDocuments applies
+    // its own splitter, so its chunk boundaries differ from ours. That mismatch
+    // made every lexical hit look like a different chunk from the semantic hit
+    // covering the same text, so RRF could never reinforce a chunk found by
+    // both retrievers. Owning the split keeps the two halves aligned.
     this.chunks = this.split(readContracts(this.cfg).docs);
     return VectorStoreIndex.init({ nodes: this.chunks.map((c) => this.toNode(c)) });
   }
 
   private split(docs: { fileName: string; title: string; text: string }[]): StoredChunk[] {
-    const splitter = new SentenceSplitter();
     const out: StoredChunk[] = [];
     for (const d of docs) {
-      for (const piece of splitter.splitText(d.text)) {
-        if (piece.trim()) out.push({ text: piece, fileName: d.fileName, title: d.title });
+      for (const piece of splitDocument(d.text)) {
+        out.push({ text: piece, fileName: d.fileName, title: d.title });
       }
     }
     return out;
@@ -296,7 +300,7 @@ class PostgresStore implements ClientStore {
     const table = tableName(this.cfg.id);
 
     // Same splitter the in-memory backend uses, so chunking is identical.
-    const pieces = new SentenceSplitter().splitText(text).filter((p) => p.trim().length > 0);
+    const pieces = splitDocument(text);
     if (pieces.length === 0) return;
 
     for (let offset = 0; offset < pieces.length; offset += EMBED_BATCH) {

@@ -1,4 +1,5 @@
 import { BM25Index, reciprocalRankFusion } from "./bm25";
+import { neighbourRadius, neighbourTopN, pickNeighbours } from "./neighbours";
 import { CLIENT_CONFIGS, getClientConfig } from "./clients";
 import { generateAnswer, relevanceThreshold } from "./providers";
 import { getStore, humanTitle, type ClientStore, type ScoredChunk, type StoredChunk } from "./vector-store";
@@ -56,10 +57,19 @@ Rules:
 - Be concise. Quote the concrete value (amount, date, term, clause) and name the source document.
 - You extract what the documents SAY. You do not give legal advice or interpret the law.`;
 
-export async function queryContracts(
+/**
+ * The query pipeline, with the retrieved excerpts exposed.
+ *
+ * The evals harness needs the full context to judge faithfulness ("is every
+ * claim in the answer supported by what the model was actually given?"), and
+ * Source.snippet is truncated to 240 characters. Returning it here beats
+ * re-running retrieval, which would cost a second embedding round-trip and
+ * could legitimately return something different.
+ */
+export async function runQuery(
   clientId: string,
   question: string
-): Promise<QueryResult> {
+): Promise<{ result: QueryResult; context: string[] }> {
   const cfg = getClientConfig(clientId);
   if (!cfg) throw new Error(`Unknown client: ${clientId}`);
   const store = getStore(cfg);
@@ -98,6 +108,22 @@ export async function queryContracts(
   const fused = reciprocalRankFusion([semanticRanking, lexicalRanking]).slice(0, TOP_K);
   const reranked = fused.map((f) => byKey.get(order[f.index])!);
 
+  const toSource = (chunk: StoredChunk & { score: number | null }): Source => {
+    const flat = chunk.text.replace(/\s+/g, " ").trim();
+    return {
+      file: chunk.title || chunk.fileName || "document",
+      fileName: chunk.fileName,
+      score: chunk.score === null ? null : Number(chunk.score.toFixed(3)),
+      snippet: flat.slice(0, 240),
+      // #3: RAW length — the viewer offsets into un-collapsed document text.
+      chunkChars: chunk.text.length,
+      via: "neighbour",
+      semanticRank: null,
+      lexicalRank: null,
+      rrf: 0,
+    };
+  };
+
   const sources: Source[] = fused.map((f) => {
     const chunk = byKey.get(order[f.index])!;
     const flat = chunk.text.replace(/\s+/g, " ").trim();
@@ -128,15 +154,49 @@ export async function queryContracts(
 
   if (refused) {
     return {
-      answer: "Not found in the provided documents.",
-      refused: true,
-      sources,
-      topScore,
+      result: {
+        answer: "Not found in the provided documents.",
+        refused: true,
+        sources,
+        topScore,
+      },
+      context: [],
     };
   }
 
-  // 4) Grounded synthesis over the reranked chunks (system prompt kept separate).
-  const context = reranked
+  // 4) Neighbour expansion — see lib/neighbours.ts for the measurements.
+  //     Only the top few hits are expanded, and only by one chunk either side,
+  //     so the added text stays bounded by the chunk cap.
+  const neighbours = pickNeighbours(
+    reranked,
+    lexical.chunks,
+    chunkKey,
+    neighbourTopN(),
+    neighbourRadius()
+  );
+
+  // Each neighbour is placed immediately after the chunk that pulled it in, so
+  // the model reads them together. That matters here: "Following the expiry of
+  // the 10 year period referred to in Article 6.1. above" is unintelligible
+  // when it arrives five excerpts away from 6.1.
+  const ordered: (StoredChunk & { score: number | null })[] = [];
+  reranked.forEach((chunk, i) => {
+    ordered.push(chunk);
+    for (const n of neighbours) {
+      if (n.becauseOfRank === i + 1) ordered.push({ ...n.chunk, score: null });
+    }
+  });
+
+  // The Inspector must show what the model actually received, including the
+  // chunks retrieval never found.
+  for (const n of neighbours) {
+    const src = toSource({ ...n.chunk, score: null });
+    src.neighbourOfRank = n.becauseOfRank;
+    sources.push(src);
+  }
+
+  // 5) Grounded synthesis (system prompt kept separate).
+  const context = ordered
     .map((chunk, i) => `[${i + 1}] (${chunk.title || "document"})\n${chunk.text}`)
     .join("\n\n");
 
@@ -146,13 +206,38 @@ export async function queryContracts(
   );
 
   // If the model itself couldn't find the answer, present it as a clean refusal.
-  const modelRefused = /not found in the provided documents/i.test(answer);
+  //
+  // The refusal has to OPEN the answer, not merely appear inside one. Three real
+  // shapes, all observed from this pipeline:
+  //
+  //   a) "Not found in the provided documents."                        -> refusal
+  //   b) "Not found in the provided documents. The excerpts contain the
+  //       table of contents but not the liability cap provisions."     -> refusal
+  //   c) "**Lease Term:** The initial lease term is 10 years (6.1).
+  //       **Auto-Renewal:** Not found in the provided documents."      -> ANSWER
+  //
+  // A bare substring test called (c) a refusal and discarded a correct answer
+  // together with every one of its citations. Adding `flat.length <= 80` fixed
+  // (c) but broke (b), which is 203 characters — the pipeline then attached
+  // citations to a refusal and the guardrail probe failed its own eval.
+  //
+  // Where the phrase sits is the actual signal, so test the prefix. No magic
+  // length, and it does not care how much the model explains itself.
+  const flat = answer.replace(/[*_`#>]/g, "").replace(/\s+/g, " ").trim();
+  const modelRefused = flat.toLowerCase().startsWith("not found in the provided documents");
   return {
-    answer,
-    refused: modelRefused,
-    sources: modelRefused ? [] : sources,
-    topScore,
+    result: {
+      answer,
+      refused: modelRefused,
+      sources: modelRefused ? [] : sources,
+      topScore,
+    },
+    context: ordered.map((c) => c.text),
   };
+}
+
+export async function queryContracts(clientId: string, question: string): Promise<QueryResult> {
+  return (await runQuery(clientId, question)).result;
 }
 
 // ---- Live ingestion of an uploaded (OCR'd) document ----

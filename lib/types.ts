@@ -24,11 +24,17 @@ export type Source = {
    * collapsed length would cut the highlight window short.
    */
   chunkChars: number;
-  /** Which half of hybrid retrieval surfaced this chunk. */
-  via: "semantic" | "lexical" | "both";
+  /**
+   * How this chunk reached the model. "neighbour" means retrieval did not find
+   * it at all — it was pulled in because it sits next to a chunk that ranked
+   * highly (see lib/neighbours.ts), so it has no score and no ranks.
+   */
+  via: "semantic" | "lexical" | "both" | "neighbour";
   /** 1-based rank in each retriever's own list; null when it did not find it. */
   semanticRank: number | null;
   lexicalRank: number | null;
+  /** For via:"neighbour", the rank of the chunk that pulled it in. */
+  neighbourOfRank?: number;
   /** Fused score: Σ 1 / (k + rank_i). */
   rrf: number;
 };

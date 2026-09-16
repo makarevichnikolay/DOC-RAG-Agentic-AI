@@ -67,12 +67,30 @@ export function embedModelName(): string {
 }
 
 // Guardrail calibration is per embedding model: every model produces its own
-// cosine-score distribution, so one constant cannot serve both providers.
+// cosine-score distribution, so one constant cannot serve both providers. It is
+// also per CHUNK SIZE — smaller chunks concentrate meaning and lift every score,
+// so these were re-measured after clause-aware chunking landed.
+//
+// Read this before trusting the guardrail: on 12 golden and 4 off-topic
+// questions the two populations OVERLAP, so no threshold separates them
+// cleanly. "What is the personal phone number of Blue Harbor's CFO?" scores
+// 0.546 because every contract carries a notices clause full of contact
+// details — it really is semantically close to the documents. The score
+// guardrail is a coarse first filter; the model's grounded refusal is what
+// actually holds the line. Do not sell it as more than that.
+//
 // An explicit RELEVANCE_THRESHOLD always wins.
 const THRESHOLD_BY_PROVIDER: Record<EmbedProvider, number> = {
-  openai: 0.28, // measured on data/contracts against the golden + off-topic questions
-  local: 0.32, // measured — at 0.28 the off-topic "CEO home address" question (0.281) slips through
-  voyage: 0.28, // NOT measured — verify with the Inspector panel before relying on it
+  // Measured. Best operating point found: refuses 3 of 4 off-topic questions
+  // (0.412, 0.406, 0.305) and wrongly refuses 0 of 12 goldens (lowest 0.448).
+  // The old 0.32 was tuned against a single probe question and, under the
+  // current chunking, would wrongly ALLOW 3 of the 4.
+  local: 0.42,
+  // NOT re-measured since clause-aware chunking changed the score distribution.
+  // 0.28 was calibrated against the old 4,700-char chunks; expect it to be too
+  // low now. Verify with the Inspector before relying on either.
+  openai: 0.28,
+  voyage: 0.28,
 };
 
 export function relevanceThreshold(): number {
@@ -284,14 +302,34 @@ export async function embedQuery(query: string): Promise<number[]> {
 
 // ---- Answer generation ----
 
-export async function generateAnswer(system: string, user: string): Promise<string> {
-  if (llmProvider() === "anthropic") {
+/**
+ * @param override  Run this one call on a different provider and/or model.
+ *   The evals judge uses it: grading with the same model that wrote the answer
+ *   is a known bias (models rate their own output generously), so
+ *   EVAL_JUDGE_PROVIDER / EVAL_JUDGE_MODEL let you grade elsewhere without
+ *   touching the app's answer model.
+ *
+ *   The PROVIDER has to be part of the override, not just the model. Overriding
+ *   the model alone sent whatever id you named to whichever SDK LLM_PROVIDER
+ *   selected — so with LLM_PROVIDER=anthropic, EVAL_JUDGE_MODEL=gpt-4o posted
+ *   "gpt-4o" to the Anthropic API and every judged question failed. Escaping
+ *   self-preference bias means changing vendor, which is exactly what that
+ *   combination was trying to express.
+ */
+export async function generateAnswer(
+  system: string,
+  user: string,
+  override?: { provider?: LlmProvider; model?: string }
+): Promise<string> {
+  const provider = override?.provider ?? llmProvider();
+  const model = override?.model ?? (override?.provider ? defaultModelFor(override.provider) : llmModel());
+  if (provider === "anthropic") {
     const { default: Anthropic } = await import("@anthropic-ai/sdk");
     const client = new Anthropic({ apiKey: requireKey("anthropic") });
     // No temperature/top_p — current Claude models reject them with a 400.
     // Determinism comes from the prompt, which is strict already.
     const message = await createMessage(client, {
-      model: llmModel(),
+      model,
       max_tokens: Number(process.env.ANTHROPIC_MAX_TOKENS ?? "2048"),
       system,
       messages: [{ role: "user", content: user }],
@@ -306,7 +344,7 @@ export async function generateAnswer(system: string, user: string): Promise<stri
   const { default: OpenAI } = await import("openai");
   const client = new OpenAI({ apiKey: requireKey("openai") });
   const completion = await client.chat.completions.create({
-    model: llmModel(),
+    model,
     temperature: 0,
     messages: [
       { role: "system", content: system },
@@ -314,6 +352,26 @@ export async function generateAnswer(system: string, user: string): Promise<stri
     ],
   });
   return (completion.choices[0]?.message?.content ?? "").trim();
+}
+
+/** Per-provider default, used when a provider is named without a model. */
+function defaultModelFor(provider: LlmProvider): string {
+  return provider === "anthropic"
+    ? process.env.ANTHROPIC_MODEL ?? "claude-opus-5"
+    : process.env.LLM_MODEL ?? "gpt-4o-mini";
+}
+
+/**
+ * Who grades the evals. Defaults to the answer provider and model, which is the
+ * self-grading case the README warns about; set both vars to escape it.
+ */
+export function judgeTarget(): { provider: LlmProvider; model: string } {
+  const rawProvider = process.env.EVAL_JUDGE_PROVIDER?.trim();
+  const provider = rawProvider
+    ? choose(rawProvider, ["openai", "anthropic"] as const, "openai", "EVAL_JUDGE_PROVIDER")
+    : llmProvider();
+  const model = process.env.EVAL_JUDGE_MODEL?.trim() || defaultModelFor(provider);
+  return { provider, model };
 }
 
 // ---- Vision OCR ----

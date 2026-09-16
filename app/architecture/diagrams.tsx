@@ -389,59 +389,6 @@ export function ErdDiagram() {
 }
 
 // ---------------------------------------------------------------------------
-// 6) Eval metrics bar chart (real seed constants — lib/seeds.ts EVAL_METRICS)
-// ---------------------------------------------------------------------------
-export function MetricsChart({
-  faithfulness,
-  citationAccuracy,
-  answerRelevance,
-  hallucinationRate,
-}: {
-  faithfulness: number;
-  citationAccuracy: number;
-  answerRelevance: number;
-  hallucinationRate: number;
-}) {
-  const baseline = 190;
-  const maxH = 150;
-  const barW = 90;
-  const gap = 40;
-  const items = [
-    { label: "Faithfulness", value: faithfulness, color: "#185fa5" },
-    { label: "Citation acc.", value: citationAccuracy, color: "#185fa5" },
-    { label: "Relevance", value: answerRelevance, color: "#185fa5" },
-    { label: "Hallucination", value: hallucinationRate, color: "#a3312d" },
-  ];
-  return (
-    <svg viewBox="0 0 640 220" width={640} height={220} role="img" aria-label="Golden-set quality metrics">
-      <line x1={30} y1={baseline} x2={610} y2={baseline} stroke="#d8dde6" strokeWidth={1} />
-      {items.map((it, i) => {
-        const x = 40 + i * (barW + gap);
-        const h = Math.max(3, it.value * maxH);
-        const y = baseline - h;
-        const pct = it.value < 0.02 ? `${(it.value * 100).toFixed(1)}%` : `${Math.round(it.value * 100)}%`;
-        return (
-          <g key={it.label}>
-            <rect x={x} y={y} width={barW} height={h} rx={5} fill={it.color} />
-            <text x={x + barW / 2} y={y - 8} fontSize={13} fontWeight={700} textAnchor="middle" fill={NAVY}>
-              {pct}
-            </text>
-            <text x={x + barW / 2} y={baseline + 18} fontSize={11} textAnchor="middle" fill={MUTED}>
-              {it.label}
-            </text>
-            {it.label === "Hallucination" && (
-              <text x={x + barW / 2} y={baseline + 32} fontSize={9.5} textAnchor="middle" fill={MUTED}>
-                (lower is better)
-              </text>
-            )}
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // 7) Real vs mock/seed proportion (stacked bar) — from README's status table
 // ---------------------------------------------------------------------------
 export function StatusChart({ real, mock, seed, mixed }: { real: number; mock: number; seed: number; mixed: number }) {
