@@ -42,6 +42,66 @@ async function getLexicalIndex(clientId: string, store: ClientStore): Promise<Le
   return fresh;
 }
 
+/**
+ * A question asking ACROSS the document set rather than about one clause.
+ * Deliberately narrow: it must match the question's opening, so "what is the
+ * limitation of liability in the services MSA?" is not caught by "what".
+ */
+const SURVEY_QUESTION = /^\s*(which|what)\s+(contracts?|documents?|agreements?)\b|\bdo any\b/i;
+
+/** How much more context a survey question may use than a normal one. */
+const SURVEY_BUDGET_MULTIPLIER = 2;
+
+/**
+ * Chunks taken from each document when answering a survey question.
+ *
+ * Validated, not trusted. `?? "2"` alone covers only an UNSET variable, and both
+ * realistic bad values are silent and severe:
+ *   SURVEY_PER_DOC=      Number("") === 0 -> the per-document guard rejects the
+ *                        first candidate of every document, the selection comes
+ *                        back empty, and EVERY survey question is force-refused.
+ *   SURVEY_PER_DOC=abc   NaN -> `n >= NaN` is always false -> the cap vanishes.
+ * Three other readers in this codebase guard exactly this; this one was missed.
+ */
+function perDocOnSurvey(): number {
+  const raw = process.env.SURVEY_PER_DOC?.trim();
+  if (!raw) return 2;
+  const parsed = Math.floor(Number(raw));
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    console.warn(`[rag] SURVEY_PER_DOC="${raw}" is not a usable number — using 2.`);
+    return 2;
+  }
+  return parsed;
+}
+
+/**
+ * Re-select the fused candidates so no single document monopolises the answer.
+ * Order within a document is preserved, so each contract still contributes its
+ * best-ranked chunks — this changes WHICH chunks are kept, never their quality.
+ */
+function spreadAcrossDocuments<T extends { index: number }>(
+  fused: T[],
+  fileOf: (index: number) => string
+): T[] {
+  const perDoc = new Map<string, number>();
+  const picked: T[] = [];
+  // Breadth deliberately costs context: a survey question gets twice the normal
+  // budget, since covering five contracts within TOP_K=5 would allow one chunk
+  // each. Written plainly, because Math.max(TOP_K, TOP_K * 2) was always just
+  // TOP_K * 2 and described a ceiling it did not impose.
+  const limit = TOP_K * SURVEY_BUDGET_MULTIPLIER;
+  const cap = perDocOnSurvey();
+  for (const f of fused) {
+    if (picked.length >= limit) break;
+    const file = fileOf(f.index);
+    const n = perDoc.get(file) ?? 0;
+    if (n >= cap) continue;
+    perDoc.set(file, n + 1);
+    picked.push(f);
+  }
+  return picked;
+}
+
 /** Same chunk retrieved by both halves? Match on text, which is what identifies it. */
 function chunkKey(c: StoredChunk): string {
   return `${c.fileName}::${c.text.length}::${c.text.slice(0, 80)}`;
@@ -55,7 +115,10 @@ Rules:
 - Answer ONLY using the provided contract excerpts. Never rely on outside knowledge of law.
 - If the excerpts do not contain the answer, reply exactly: "Not found in the provided documents."
 - Be concise. Quote the concrete value (amount, date, term, clause) and name the source document.
-- You extract what the documents SAY. You do not give legal advice or interpret the law.`;
+- You extract what the documents SAY. You do not give legal advice or interpret the law.
+- When asked WHICH documents contain something, list a document only if its excerpt
+  actually contains that thing. A related or adjacent provision is not the thing asked
+  about. If only some documents have it, say so rather than padding the list.`;
 
 /**
  * The query pipeline, with the retrieved excerpts exposed.
@@ -105,7 +168,23 @@ export async function runQuery(
   for (const h of lexicalHits) lexicalRanking.push({ index: slot(lexical.chunks[h.index], null) });
 
   // 2) Merge with Reciprocal Rank Fusion: RRF(d) = Σ 1 / (k + rank_i(d)).
-  const fused = reciprocalRankFusion([semanticRanking, lexicalRanking]).slice(0, TOP_K);
+  //
+  //    Survey questions then get a different selection. "Which contracts
+  //    include insurance obligations?" needs BREADTH — one hit from each
+  //    contract — but taking the 5 best chunks overall gives whichever contract
+  //    happens to contain the most matching text. The Master Services Agreement
+  //    carries pages of insurance schedules, so it filled every slot and the
+  //    Transportation MSA's cargo-insurance clause never reached the model.
+  //
+  //    Nothing extra is retrieved: the same candidate pool is regrouped, capped
+  //    at SURVEY_PER_DOC chunks per document. Measured on the golden set,
+  //    that alone takes retrieval recall from 7/8 to 8/8, and applying it to
+  //    every question instead of only survey ones was measured WORSE (evidence
+  //    coverage 50% -> 42%), which is why the shape of the question decides.
+  const fusedAll = reciprocalRankFusion([semanticRanking, lexicalRanking]);
+  const fused = SURVEY_QUESTION.test(question)
+    ? spreadAcrossDocuments(fusedAll, (i) => byKey.get(order[i])!.fileName)
+    : fusedAll.slice(0, TOP_K);
   const reranked = fused.map((f) => byKey.get(order[f.index])!);
 
   const toSource = (chunk: StoredChunk & { score: number | null }): Source => {
@@ -160,7 +239,13 @@ export async function runQuery(
         sources,
         topScore,
       },
-      context: [],
+      // The excerpts are returned even though no answer was generated. Returning
+      // [] made the evals' retrieval check see an empty haystack and report
+      // "retrieval MISS (0%) — the model never saw this, fix search" for a
+      // question where search had ranked the right clause first and the
+      // GUARDRAIL was what stopped it. The lowest golden scores 0.448 against a
+      // 0.42 threshold, so that margin is thin enough to hit in practice.
+      context: reranked.map((c) => `(${c.title || "document"})\n${c.text}`),
     };
   }
 
@@ -232,7 +317,12 @@ export async function runQuery(
       sources: modelRefused ? [] : sources,
       topScore,
     },
-    context: ordered.map((c) => c.text),
+    // Exactly what the model receives, title line included. Returning bare
+    // chunk text made the evals inspect LESS than the model saw: a golden whose
+    // expected answer names documents ("the Warehouse Lease; the Transportation
+    // MSA") was reported as a retrieval MISS even when chunks from both were
+    // retrieved, because those names live in the title, not the clause text.
+    context: ordered.map((c) => `(${c.title || "document"})\n${c.text}`),
   };
 }
 

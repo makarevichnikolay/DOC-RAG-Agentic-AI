@@ -42,10 +42,24 @@ import {
 } from "./providers";
 import { getUploadedDoc, runQuery, TOP_K } from "./rag";
 import { getSeed } from "./seeds";
-import { vectorStoreKind } from "./vector-store";
+import { getStore, vectorStoreKind } from "./vector-store";
 import type { Golden } from "./types";
 
 export type Correctness = "correct" | "partial" | "incorrect";
+
+/**
+ * Whether the excerpts handed to the model actually contained the evidence the
+ * expected answer asserts. Splits a failure into "search missed it" vs "search
+ * found it and the model fumbled" — two problems with entirely different fixes.
+ */
+export type RetrievalCheck = {
+  /** Every key fact appeared in the retrieved text. */
+  found: boolean;
+  /** Fraction of key facts present, 0..1 — partial retrieval is informative. */
+  coverage: number;
+  /** The key facts that were NOT retrieved, for the failure message. */
+  missing: string[];
+};
 
 export type GoldenResult = {
   q: string;
@@ -73,6 +87,14 @@ export type GoldenResult = {
   citationsValid: boolean;
   /** Every document named in the golden's `source` was actually cited. */
   correctDocsCited: boolean | null;
+  /**
+   * Did RETRIEVAL do its job? Null for probes, where nothing should be found.
+   *
+   * This is the diagnostic the suite was missing. Without it a failure reads as
+   * "the model wrote a bad answer" even when the model never received the
+   * relevant clause — which was true of every failure in the first real run.
+   */
+  retrieval: RetrievalCheck | null;
 
   // --- judged (one LLM call, skipped for probes and when judging is off) ---
   correctness: Correctness | null;
@@ -83,6 +105,25 @@ export type GoldenResult = {
   error?: string;
 };
 
+/**
+ * Client isolation, checked rather than trusted.
+ *
+ * "Each client's retrieval only ever sees that client's documents" is the
+ * central claim of a multi-tenant legal product, and nothing tested it. This
+ * reads what is actually in the client's store and asserts every chunk belongs
+ * to a document that client owns.
+ *
+ * No embeddings and no model: it inspects stored data directly, so it is free
+ * under every provider configuration and cannot be fooled by a query that
+ * happens not to surface the leak.
+ */
+export type IsolationCheck = {
+  clean: boolean;
+  chunksChecked: number;
+  /** Files present in this client's store that the client does not own. */
+  foreignFiles: string[];
+};
+
 export type EvalRun = {
   clientId: string;
   clientName: string;
@@ -90,6 +131,7 @@ export type EvalRun = {
   durationMs: number;
   judged: boolean;
   config: Record<string, string | number>;
+  isolation: IsolationCheck;
   results: GoldenResult[];
   summary: {
     total: number;
@@ -98,6 +140,8 @@ export type EvalRun = {
     refusalAccuracy: number;
     citationValidity: number;
     correctDocRate: number | null;
+    /** Share of non-probe questions whose evidence retrieval actually supplied. */
+    retrievalRecall: number | null;
     correctness: Record<Correctness, number>;
     /**
      * Judging was requested but produced no verdict (API error, unparseable
@@ -155,12 +199,129 @@ function containsFlat(haystack: string, needle: string): boolean {
   return n.length > 0 && flatten(haystack).includes(n);
 }
 
+/**
+ * The client's own seed, or null.
+ *
+ * `getSeed` falls back to SEEDS[0] for an unknown id, which is fine for the UI
+ * but dangerous here: a client registered in CLIENT_CONFIGS without a seed.json
+ * would silently borrow Northwind's document list, and checkIsolation would
+ * then vouch for a store holding Northwind's files as `clean: true`. A check
+ * whose whole purpose is proving tenant separation must not fail open.
+ */
+function ownSeed(clientId: string) {
+  const seed = getSeed(clientId);
+  return seed.clientId === clientId ? seed : null;
+}
+
 /** "Doc 1; Doc 2, Art. 9" → the file names of documents 1 and 2 for this client. */
 function expectedFiles(clientId: string, source: string): string[] {
-  const docs = getSeed(clientId).documents;
+  const docs = ownSeed(clientId)?.documents ?? [];
   return [...source.matchAll(/Doc\s+(\d+)/gi)]
     .map((m) => docs[Number(m[1]) - 1]?.file)
     .filter((f): f is string => Boolean(f));
+}
+
+/**
+ * The distinctive facts a correct answer must contain: amounts, durations,
+ * clause numbers and proper nouns from the lawyer-written expected answer.
+ *
+ * Deliberately NOT clause-number matching. That was tried first — parsing
+ * "Doc 2, Art. 6" and locating the heading in the document — and it scored 0 of
+ * 4 on questions that were actually fine, because the bundled SEC contracts do
+ * not share one heading style. Key facts survive that variation.
+ *
+ * Common words are dropped: "agreement" appearing in the retrieved text proves
+ * nothing about whether the right clause was found.
+ */
+const FACT_STOPWORDS = new Set([
+  "agreement", "master", "services", "section", "article", "provided",
+  "documents", "found", "contract", "clause", "party", "parties",
+]);
+
+export function keyFacts(expected: string): string[] {
+  const facts = new Set<string>();
+  // Amounts, currency, durations, dotted clause numbers.
+  for (const m of expected.matchAll(
+    /\$[\d,]+(?:\.\d+)?|EUR\s*[\d.,]+|\b\d+(?:[-\s])(?:year|month|day)s?\b|\b\d+\.\d+\b/gi
+  )) {
+    facts.add(m[0].replace(/\s+/g, " ").trim().toLowerCase());
+  }
+  // Capitalised words — party names, jurisdictions ("Texas", "Delaware").
+  for (const m of expected.matchAll(/\b[A-Z][a-zA-Z]{4,}\b/g)) {
+    const w = m[0].toLowerCase();
+    if (!FACT_STOPWORDS.has(w)) facts.add(w);
+  }
+  return [...facts];
+}
+
+/** Lowercase, collapse whitespace, and strip the commas inside numbers. */
+function normalizeForMatch(text: string): string {
+  return text.toLowerCase().replace(/(\d),(?=\d)/g, "$1").replace(/\s+/g, " ");
+}
+
+const DURATION_FACT = /^(\d+)[-\s](year|month|day)s?$/i;
+
+/**
+ * Digit -> word, because contracts write durations three different ways:
+ *   "sixty (60) days"   number and word together
+ *   "two years"         word only — the Mutual NDA's confidentiality period
+ *   "10 years"          digits only
+ * Only the values that actually occur in contract durations are listed.
+ */
+const NUMBER_WORDS: Record<string, string> = {
+  "1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six",
+  "7": "seven", "8": "eight", "9": "nine", "10": "ten", "11": "eleven",
+  "12": "twelve", "15": "fifteen", "18": "eighteen", "20": "twenty",
+  "24": "twenty[- ]?four", "30": "thirty", "36": "thirty[- ]?six",
+  "45": "forty[- ]?five", "60": "sixty", "90": "ninety", "180": "one hundred eighty",
+};
+
+/**
+ * Is this fact present in the retrieved text?
+ *
+ * Durations need more than a substring test, because contracts and plain
+ * English disagree on how to write a number. The expected answers say
+ * "60 days" and "1-year"; the contracts say "sixty (60) days" and
+ * "one (1) year". A literal comparison reported retrieval MISS on questions
+ * that had in fact retrieved the right clause and graded `correct` — a
+ * diagnostic pointing at the wrong half of the pipeline is worse than none.
+ *
+ * So for "<number> <unit>" we allow a short run of non-alphanumerics between
+ * the two, which spans ") " and "-" without letting a DIFFERENT number match:
+ * "60 days" does not match "thirty (30) days".
+ */
+function factPresent(fact: string, normalizedHay: string): boolean {
+  const duration = fact.match(DURATION_FACT);
+  if (duration) {
+    const [, n, unit] = duration;
+    const word = NUMBER_WORDS[n];
+    const number = word ? `(?:${n}|${word})` : n;
+    return new RegExp(`\\b${number}\\b[^a-z0-9]{0,6}${unit}s?\\b`, "i").test(normalizedHay);
+  }
+  return normalizedHay.includes(normalizeForMatch(fact));
+}
+
+/**
+ * Did the text sent to the model contain the expected answer's key facts?
+ *
+ * Note what this is NOT: it never re-queries, never calls a model, and never
+ * asks anything a second time. It compares the excerpts already retrieved
+ * against facts already written down — which is what makes it free.
+ *
+ * Known bias, so it is a diagnostic label and not a pass/fail gate: coverage
+ * rises with the amount of text retrieved, so a configuration that simply sends
+ * more would score better without being better.
+ */
+function checkRetrieval(expected: string, context: string[]): RetrievalCheck | null {
+  const facts = keyFacts(expected);
+  if (facts.length === 0) return null; // nothing concrete to look for
+  const hay = normalizeForMatch(context.join(" "));
+  const missing = facts.filter((f) => !factPresent(f, hay));
+  return {
+    found: missing.length === 0,
+    coverage: (facts.length - missing.length) / facts.length,
+    missing,
+  };
 }
 
 async function documentText(cfg: ClientConfig, fileName: string): Promise<string | null> {
@@ -257,6 +418,7 @@ async function evaluate(
     refusalCorrect: false,
     citationsValid: true,
     correctDocsCited: null,
+    retrieval: null,
     correctness: null,
     faithful: null,
     judgeNote: null,
@@ -284,14 +446,22 @@ async function evaluate(
     }
 
     // 3) Did we cite the documents the golden says hold the answer?
-    if (!probe) {
+    //    Skipped when the pipeline refused: the guardrail branch still returns
+    //    `sources`, so a wrongly-refused question would otherwise score
+    //    "correct document cited" for an answer whose entire text is
+    //    "Not found in the provided documents." — and inflate correctDocRate.
+    if (!probe && !result.refused) {
       const want = expectedFiles(cfg.id, g.source);
       base.correctDocsCited = want.length
         ? want.every((f) => base.citedFiles.includes(f))
         : null;
     }
 
-    // 4) The judge — only where reading comprehension is actually required.
+    // 4) Did retrieval supply the evidence? Free, and it is what separates
+    //    "search missed it" from "the model fumbled it".
+    if (!probe) base.retrieval = checkRetrieval(g.expected, context);
+
+    // 5) The judge — only where reading comprehension is actually required.
     //    A refused probe has no answer worth grading.
     if (withJudge && !probe && !result.refused) {
       // Scoped try: the judge is an extra opinion ON a result we already have.
@@ -362,6 +532,48 @@ async function mapLimit<T, R>(
 
 // ---- Public entry point ----
 
+/**
+ * Read the client's store and confirm every chunk in it belongs to a document
+ * that client owns. Both backends keep tenants apart structurally — the memory
+ * store by holding one index per client, Postgres by using one table per client
+ * — so this verifies that structure held, not that a WHERE clause was applied.
+ */
+export async function checkIsolation(cfg: ClientConfig): Promise<IsolationCheck> {
+  const owned = new Set<string>();
+  for (const dir of [cfg.contractsDir, cfg.extraDir]) {
+    if (!fs.existsSync(dir)) continue;
+    for (const f of fs.readdirSync(dir)) owned.add(f);
+  }
+  // The client's declared document manifest. Null when this client has no seed
+  // of its own — in which case nothing is treated as owned, so any stored chunk
+  // is reported as foreign rather than silently accepted.
+  const seed = ownSeed(cfg.id);
+  if (!seed) {
+    return {
+      clean: false,
+      chunksChecked: 0,
+      foreignFiles: [`no seed.json for client "${cfg.id}" — ownership cannot be verified`],
+    };
+  }
+  for (const d of seed.documents) owned.add(d.file);
+
+  const chunks = await getStore(cfg).allChunks();
+  const foreign = new Set<string>();
+  for (const c of chunks) {
+    if (!c.fileName) continue;
+    // An uploaded file has no copy on disk; treat it as owned only if the store
+    // itself vouches for it under THIS client.
+    if (owned.has(c.fileName)) continue;
+    if (await getUploadedDoc(cfg.id, c.fileName)) continue;
+    foreign.add(c.fileName);
+  }
+  return {
+    clean: foreign.size === 0,
+    chunksChecked: chunks.length,
+    foreignFiles: [...foreign],
+  };
+}
+
 export async function runEvals(clientId: string, withJudge = true): Promise<EvalRun> {
   const cfg = getClientConfig(clientId);
   if (!cfg) throw new Error(`Unknown client: ${clientId}`);
@@ -371,11 +583,13 @@ export async function runEvals(clientId: string, withJudge = true): Promise<Eval
   const results = await mapLimit(seed.goldens, evalConcurrency(), (g) =>
     evaluate(cfg, g, withJudge)
   );
+  const isolation = await checkIsolation(cfg);
 
   const total = results.length;
   const rate = (n: number) => (total ? n / total : 0);
   const judged = results.filter((r) => r.correctness !== null);
   const withDocs = results.filter((r) => r.correctDocsCited !== null);
+  const withRetrieval = results.filter((r) => r.retrieval !== null);
   const faithJudged = results.filter((r) => r.faithful !== null);
 
   const correctness: Record<Correctness, number> = { correct: 0, partial: 0, incorrect: 0 };
@@ -401,6 +615,7 @@ export async function runEvals(clientId: string, withJudge = true): Promise<Eval
       topK: TOP_K,
       relevanceThreshold: relevanceThreshold(),
     },
+    isolation,
     results,
     summary: {
       total,
@@ -410,6 +625,9 @@ export async function runEvals(clientId: string, withJudge = true): Promise<Eval
       citationValidity: rate(results.filter((r) => r.citationsValid).length),
       correctDocRate: withDocs.length
         ? withDocs.filter((r) => r.correctDocsCited).length / withDocs.length
+        : null,
+      retrievalRecall: withRetrieval.length
+        ? withRetrieval.filter((r) => r.retrieval!.found).length / withRetrieval.length
         : null,
       correctness,
       ungraded,
