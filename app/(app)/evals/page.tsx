@@ -25,6 +25,25 @@ function statusCell(r: GoldenResult | undefined) {
       {r.pass ? "pass" : "fail"}
     </span>,
   ];
+  // The diagnostic that was missing: on a failure, which half broke?
+  if (r.retrieval) {
+    const ok = r.retrieval.found;
+    chips.push(
+      <span
+        key="ret"
+        className={`chip ${ok ? "okchip" : "failchip"}`}
+        title={
+          ok
+            ? "Retrieval supplied every key fact from the expected answer."
+            : `Retrieval did NOT supply: ${r.retrieval.missing.join(", ")}. The model never saw this — fix search, not the prompt.`
+        }
+      >
+        {ok
+          ? "retrieval ok"
+          : `retrieval MISS (${Math.round(r.retrieval.coverage * 100)}%)`}
+      </span>
+    );
+  }
   if (r.isProbe) {
     chips.push(
       <span key="p" className="chip" title="Off-topic probe: the pipeline must refuse it.">
@@ -289,7 +308,8 @@ export default function EvalsPage() {
             <strong>
               {run.summary.passed}/{run.summary.total} passed
             </strong>{" "}
-            · refusal accuracy {pct(run.summary.refusalAccuracy)} · correct document cited{" "}
+            · refusal accuracy {pct(run.summary.refusalAccuracy)} · retrieval recall{" "}
+            {pct(run.summary.retrievalRecall)} · correct document cited{" "}
             {pct(run.summary.correctDocRate)} · graded{" "}
             {run.summary.correctness.correct} correct / {run.summary.correctness.partial} partial /{" "}
             {run.summary.correctness.incorrect} incorrect
@@ -298,6 +318,15 @@ export default function EvalsPage() {
             {Math.round(run.durationMs / 100) / 10}s · avg {run.summary.avgMs}ms per question · avg
             context {run.summary.avgContextChars} chars · avg top score{" "}
             {run.summary.avgTopScore.toFixed(3)}
+          </div>
+          {/* Client isolation is the product's central claim, so state the
+              result rather than implying it. */}
+          <div style={{ marginTop: 4 }}>
+            <span className={`chip ${run.isolation.clean ? "okchip" : "failchip"}`}>
+              {run.isolation.clean
+                ? `isolation ok — all ${run.isolation.chunksChecked} stored chunks belong to this client`
+                : `ISOLATION LEAK — foreign files: ${run.isolation.foreignFiles.join(", ")}`}
+            </span>
           </div>
           {/* A pass rate means nothing without the configuration behind it. */}
           <div className="muted" style={{ marginTop: 4 }}>

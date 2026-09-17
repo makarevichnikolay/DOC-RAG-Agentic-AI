@@ -152,7 +152,12 @@ function hardWrap(text: string, max: number): string[] {
   while (at < text.length) {
     let end = Math.min(text.length, at + max);
     if (end < text.length) {
-      const space = text.lastIndexOf(" ", end);
+      // `end - 1`, not `end`: lastIndexOf is INCLUSIVE of its start position, so
+      // a space sitting exactly at at+max gave end = space + 1 and a slice of
+      // max + 1 characters. The cap is sized against the embedding model's
+      // 512-token truncation cliff, so a one-character overshoot is a broken
+      // invariant, not a rounding detail.
+      const space = text.lastIndexOf(" ", end - 1);
       if (space > at) end = space + 1;
     }
     out.push(text.slice(at, end));
@@ -161,7 +166,31 @@ function hardWrap(text: string, max: number): string[] {
   return out;
 }
 
-/** Fold runs of thin fragments together, while respecting the cap. */
+/**
+ * Fold runs of thin fragments together, while respecting the cap.
+ *
+ * Thin pieces merge BACKWARD, into the chunk before them. That has a real cost,
+ * and it was measured rather than assumed. In the Transportation MSA, clause 10
+ * exceeds the cap, so enforceMax subdivides it and its first four sub-pieces are
+ * all under MIN_CHUNK_CHARS — the heading "10. Insurance and Indemnity.", then
+ * (a), (i), (ii). All four get absorbed into clause 9, producing a chunk that
+ * OPENS with "9. Loss of Product" and hides every insurance obligation in its
+ * tail. Search ranks it #13 for "which contracts include insurance
+ * obligations?", and a cross-encoder reranker scores it lower still — both are
+ * reading a chunk that is, on its face, about loss of product.
+ *
+ * Merging such headings FORWARD instead was tried, so that every chunk opens
+ * with its own heading. It produced visibly better chunks and measured WORSE:
+ *
+ *                              insurance Q   liability Q (via neighbours)
+ *   backward (this code)         missed         FOUND
+ *   forward (heading-first)      missed         MISSED
+ *
+ * It never fixed the question that motivated it, and it broke one that worked:
+ * re-cutting shifted every downstream boundary, so clause 5.5.1 of the MSA no
+ * longer sat next to a chunk that retrieval finds. Do not re-apply it without
+ * re-running that comparison.
+ */
 function mergeSmall(pieces: string[], max: number): string[] {
   const out: string[] = [];
   for (const piece of pieces) {

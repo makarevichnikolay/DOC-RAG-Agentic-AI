@@ -179,9 +179,9 @@
       "source": "Doc 5"
     },
     {
-      "q": "Which contracts include insurance obligations?",
-      "expected": "The Warehouse Lease (Art. 9); a cargo insurance obligation also follows from the Transportation MSA.",
-      "source": "Doc 1; Doc 2, Art. 9"
+      "q": "Which contracts include insurance obligations, and who must carry the insurance?",
+      "expected": "The Transportation MSA requires Carrier to maintain workers' compensation, general and vehicle liability cover; the Warehouse Lease requires the Landlord to insure the premises and the Tenant to insure its equipment and inventory; and the Master Services Agreement requires Supplier to maintain insurance naming MetroPCS as an additional insured.",
+      "source": "Doc 1, Sec. 10; Doc 2, Art. 9; Doc 3, Sec. 7.4"
     },
     {
       "q": "What is the home address of Northwind's CEO?",

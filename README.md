@@ -280,10 +280,36 @@ Five things are measured, and they differ in how much you should trust them:
 | Check | How | Trust |
 | --- | --- | --- |
 | **Refusal** — is the off-topic probe refused, and are real questions answered? | exact | total |
+| **Retrieval recall** — did the excerpts contain the expected answer's key facts? | exact | total |
 | **Citation validity** — is each cited snippet findable in the document it names? | exact | total |
 | **Correct document** — was the document the golden names among the sources? | exact | total |
+| **Isolation** — does the client's store hold only that client's documents? | exact | total |
 | **Correctness** — does the answer state the expected facts? | LLM judge | good, not perfect |
 | **Faithfulness** — is every claim supported by the retrieved excerpts? | LLM judge | good, not perfect |
+
+**Retrieval recall is the diagnostic that tells you which half broke.** RAG is
+retrieval plus generation, and without this a failure reads as "the model wrote
+a bad answer" even when the model never received the relevant clause — which was
+true of *every* failure in the first real run. `retrieval MISS` means fix search;
+`retrieval ok` next to a wrong answer means fix the prompt or the model.
+
+Matching is deliberately tolerant of how contracts write numbers. The expected
+answers say "60 days", "2 years", "3-year"; the contracts say "sixty (60) days",
+"two years", "periods of 3 years". A literal comparison reported MISS on
+questions that had retrieved the right clause and graded `correct` — a
+diagnostic pointing at the wrong half is worse than none. It still refuses to
+match a *different* number: "60 days" does not match "thirty (30) days".
+
+Its known bias, which is why it labels rather than gates: coverage rises with the
+amount of text retrieved, so a configuration that simply sends more would score
+better without being better.
+
+**Isolation** can be checked on its own — it reads stored data, asks no model and
+embeds nothing, so it costs nothing:
+
+```bash
+npm run evals -- --isolation
+```
 
 Deterministic checks come first on principle: anything a substring comparison can
 decide is decided that way, because it is free, instant and reproducible. The
@@ -314,6 +340,24 @@ those separately to keep a judge outage from reading as a clean run.
 Every run prints the configuration it ran under (provider, models, vector store,
 chunker, `TOP_K`, threshold). A pass rate without that is not comparable to
 anything.
+
+## Survey questions
+
+"Which contracts include insurance obligations?" needs one hit from *each*
+contract, but retrieval returns the best five chunks overall — and the Master
+Services Agreement carries pages of insurance schedules, so it filled every slot
+and the Transportation MSA's cargo-insurance clause never reached the model.
+
+Questions matching `SURVEY_QUESTION` in `lib/rag.ts` therefore regroup the same
+candidate pool, capping each document at `SURVEY_PER_DOC` (default 2) chunks.
+Nothing extra is retrieved. Measured on the golden set, retrieval recall goes
+**7/8 to 8/8**.
+
+Applying the same cap to *every* question was measured first and was worse
+(evidence coverage 50% → 42%), which is why the question's shape decides. Three
+other approaches to this failure were measured and rejected: a wider candidate
+pool (15 → 80, no change), cross-encoder reranking (target fell to last place),
+and contextual retrieval (rank 13 → 10, still outside the top 5).
 
 ## The relevance guardrail, honestly
 
