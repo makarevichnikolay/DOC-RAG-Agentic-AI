@@ -81,11 +81,21 @@ export function embedModelName(): string {
 //
 // An explicit RELEVANCE_THRESHOLD always wins.
 const THRESHOLD_BY_PROVIDER: Record<EmbedProvider, number> = {
-  // Measured. Best operating point found: refuses 3 of 4 off-topic questions
-  // (0.412, 0.406, 0.305) and wrongly refuses 0 of 12 goldens (lowest 0.448).
-  // The old 0.32 was tuned against a single probe question and, under the
-  // current chunking, would wrongly ALLOW 3 of the 4.
-  local: 0.42,
+  // Set to 0.40 by request. The measured trade-off, so the choice stays visible:
+  //
+  //   off-topic scores   0.546 · 0.413 · 0.412 · 0.305
+  //   lowest relevant    0.448
+  //
+  //   0.42  refuses 3 of 4 off-topic, wrongly refuses 0 of 12 goldens
+  //   0.40  refuses 1 of 4 off-topic, wrongly refuses 0 of 12 goldens
+  //
+  // 0.02 sounds like nothing, but two probes sit at 0.412 and 0.413 — squarely
+  // inside that gap — so the change flips both from refused to allowed. Nothing
+  // relevant scores below 0.448, so the lower value buys no extra coverage on
+  // the answering side; it only sends more off-topic questions to the model.
+  // Those are still refused, by the model rather than by the score, at the cost
+  // of one LLM call each. Raise to 0.42 to restore the measured optimum.
+  local: 0.4,
   // NOT re-measured since clause-aware chunking changed the score distribution.
   // 0.28 was calibrated against the old 4,700-char chunks; expect it to be too
   // low now. Verify with the Inspector before relying on either.

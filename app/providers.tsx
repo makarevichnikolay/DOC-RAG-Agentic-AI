@@ -79,6 +79,8 @@ type AppContextValue = {
   setLastQuery: (q: LastQuery) => void;
   audit: AuditEvent[];
   log: (action: string, detail: string) => void;
+  /** Drop every audit entry with this action — see clearLog below. */
+  clearLog: (action: string) => void;
 };
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -130,6 +132,17 @@ export function Providers({ children }: { children: ReactNode }) {
     },
     [session]
   );
+
+  // Erase one action's entries from the audit trail.
+  //
+  // Exists for the Discussion screen, which tells the user its conversation "is
+  // discarded when you leave this page, switch client, or press End session".
+  // The questions were still landing here as "discuss" entries and staying
+  // readable on Settings afterwards, so the promise was false. A temporary mode
+  // has to be temporary everywhere, not just in the component that renders it.
+  const clearLog = useCallback((action: string) => {
+    setAudit((prev) => prev.filter((e) => e.action !== action));
+  }, []);
 
   const signIn = useCallback((role: Role, name: string) => {
     const s: Session = { role, name };
@@ -252,6 +265,7 @@ export function Providers({ children }: { children: ReactNode }) {
       setLastQuery,
       audit,
       log,
+      clearLog,
     }),
     [
       ready,
@@ -275,6 +289,7 @@ export function Providers({ children }: { children: ReactNode }) {
       setLastQuery,
       audit,
       log,
+      clearLog,
     ]
   );
 
