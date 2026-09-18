@@ -106,7 +106,7 @@ Current Claude models reject `temperature`/`top_p`, so the Anthropic path does
 not send them.
 
 `RELEVANCE_THRESHOLD` defaults **per embedding model**, because each produces a
-different cosine-score distribution: `0.28` for OpenAI and `0.32` for local
+different cosine-score distribution: `0.28` for OpenAI and `0.40` for local
 (both measured on `data/contracts`); Voyage falls back to `0.28` but is
 unverified. The
 off-topic demo question sits close to the line, so a threshold borrowed from a
@@ -374,10 +374,21 @@ No threshold separates them. The CFO question scores 0.546 because every
 contract carries a notices clause full of names, addresses and phone numbers —
 it genuinely is close to the documents in meaning.
 
-The default of **0.42** is the best operating point found: it refuses 3 of the 4
-off-topic questions and wrongly refuses **0 of 12** goldens. The fourth is caught
-by the model's grounded refusal, which is what actually holds the line. The score
-guardrail is a coarse first filter; do not present it as a guarantee.
+The default is **0.40**, set deliberately. The measured optimum is 0.42:
+
+| threshold | off-topic refused by score | goldens wrongly refused |
+| --- | --- | --- |
+| 0.42 | 3 of 4 | 0 of 12 |
+| **0.40** (current) | **1 of 4** | 0 of 12 |
+
+Two probes score 0.412 and 0.413, so they sit inside that 0.02 gap and the lower
+value lets both through. They are still refused — by the model reading the
+excerpts and finding nothing, rather than by the score — at the cost of one LLM
+call each. Nothing relevant scores below 0.448, so 0.40 gains no coverage on the
+answering side.
+
+Either way the score guardrail is a coarse first filter, and the model's grounded
+refusal is what actually holds the line. Do not present the score as a guarantee.
 
 This also corrected a stale number. The previous 0.32 was calibrated against a
 single probe question and against the old 4,700-char chunks; under clause-aware

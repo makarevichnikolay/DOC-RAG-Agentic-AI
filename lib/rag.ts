@@ -236,6 +236,7 @@ export async function runQuery(
       result: {
         answer: "Not found in the provided documents.",
         refused: true,
+        refusedBy: "guardrail",
         sources,
         topScore,
       },
@@ -244,7 +245,7 @@ export async function runQuery(
       // "retrieval MISS (0%) — the model never saw this, fix search" for a
       // question where search had ranked the right clause first and the
       // GUARDRAIL was what stopped it. The lowest golden scores 0.448 against a
-      // 0.42 threshold, so that margin is thin enough to hit in practice.
+      // 0.40 threshold — a 0.048 margin, still thin enough to hit in practice.
       context: reranked.map((c) => `(${c.title || "document"})\n${c.text}`),
     };
   }
@@ -314,6 +315,7 @@ export async function runQuery(
     result: {
       answer,
       refused: modelRefused,
+      refusedBy: modelRefused ? "model" : undefined,
       sources: modelRefused ? [] : sources,
       topScore,
     },

@@ -229,9 +229,11 @@ export default function EvalsPage() {
             </div>
             <div className="klabel">
               Guardrail: top score {lq.result.topScore} —{" "}
-              {lq.result.refused
-                ? "below threshold → refused"
-                : "above threshold → answer allowed"}
+              {lq.result.refusedBy === "guardrail"
+                ? "below threshold → refused before any model call"
+                : lq.result.refusedBy === "model"
+                  ? "above threshold → excerpts sent, but the model found no answer"
+                  : "above threshold → answer allowed"}
             </div>
             {lq.result.sources.map((s, i) => (
               <div className="src" key={i}>

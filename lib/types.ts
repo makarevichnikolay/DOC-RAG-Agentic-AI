@@ -42,6 +42,19 @@ export type Source = {
 export type QueryResult = {
   answer: string;
   refused: boolean;
+  /**
+   * Which stage refused, when one did.
+   *
+   * "guardrail" — the best semantic score fell below RELEVANCE_THRESHOLD and no
+   *               model call was made.
+   * "model"     — retrieval passed, the model read the excerpts and found no
+   *               answer in them.
+   *
+   * Worth distinguishing because the Inspector used to print "below threshold"
+   * for both, which is wrong and misleading exactly when the threshold is low
+   * enough to let borderline questions through to the model.
+   */
+  refusedBy?: "guardrail" | "model";
   sources: Source[];
   topScore: number;
 };
