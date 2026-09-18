@@ -37,6 +37,7 @@ export type SectionId =
   | "flags"
   | "portfolio"
   | "evals"
+  | "monitoring"
   | "settings";
 
 const ALL: Role[] = ["analyst", "operations", "admin"];
@@ -56,6 +57,7 @@ export const NAV: {
   { id: "flags", label: "Flags & Tasks", href: "/flags", icon: "⚑", roles: ALL },
   { id: "portfolio", label: "Portfolio", href: "/portfolio", icon: "◫", roles: ["admin"] },
   { id: "evals", label: "Inspector & Evals", href: "/evals", icon: "◎", roles: ["admin"] },
+  { id: "monitoring", label: "Monitoring", href: "/monitoring", icon: "◔", roles: ["admin"] },
   { id: "settings", label: "Settings", href: "/settings", icon: "⚙", roles: ["admin"] },
 ];
 

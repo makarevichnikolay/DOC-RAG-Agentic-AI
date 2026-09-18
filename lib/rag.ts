@@ -2,6 +2,7 @@ import { BM25Index, reciprocalRankFusion } from "./bm25";
 import { neighbourRadius, neighbourTopN, pickNeighbours } from "./neighbours";
 import { CLIENT_CONFIGS, getClientConfig } from "./clients";
 import { generateAnswer, relevanceThreshold } from "./providers";
+import { buildContext } from "./context";
 import { getStore, humanTitle, type ClientStore, type ScoredChunk, type StoredChunk } from "./vector-store";
 import type { QueryResult, Source, PortfolioResult } from "./types";
 
@@ -203,6 +204,14 @@ export async function runQuery(
     };
   };
 
+  // Kept in lockstep with `sources`: sourceChunks[i] is the chunk that produced
+  // sources[i]. buildContext may drop trailing excerpts (see lib/context.ts), and
+  // a citation for an excerpt the model never received is exactly the drift that
+  // module exists to prevent — so the drop has to be applied to both lists.
+  const sourceChunks: (StoredChunk & { score: number | null })[] = fused.map(
+    (f) => byKey.get(order[f.index])!
+  );
+
   const sources: Source[] = fused.map((f) => {
     const chunk = byKey.get(order[f.index])!;
     const flat = chunk.text.replace(/\s+/g, " ").trim();
@@ -232,12 +241,15 @@ export async function runQuery(
   const refused = topScore < relevanceThreshold() || reranked.length === 0;
 
   if (refused) {
+    // `reranked` and `sources` are both built from `fused`, in the same order,
+    // so trimming to the excerpts the builder kept is a plain slice here.
+    const refusedContext = buildContext(reranked);
     return {
       result: {
         answer: "Not found in the provided documents.",
         refused: true,
         refusedBy: "guardrail",
-        sources,
+        sources: sources.slice(0, refusedContext.included),
         topScore,
       },
       // The excerpts are returned even though no answer was generated. Returning
@@ -246,7 +258,9 @@ export async function runQuery(
       // question where search had ranked the right clause first and the
       // GUARDRAIL was what stopped it. The lowest golden scores 0.448 against a
       // 0.40 threshold — a 0.048 margin, still thin enough to hit in practice.
-      context: reranked.map((c) => `(${c.title || "document"})\n${c.text}`),
+      // Same builder as the answering path, so the evals harness reads the
+      // excerpts in the exact form the model would have been given.
+      context: refusedContext.blocks,
     };
   }
 
@@ -279,16 +293,37 @@ export async function runQuery(
     const src = toSource({ ...n.chunk, score: null });
     src.neighbourOfRank = n.becauseOfRank;
     sources.push(src);
+    sourceChunks.push({ ...n.chunk, score: null });
   }
 
   // 5) Grounded synthesis (system prompt kept separate).
-  const context = ordered
-    .map((chunk, i) => `[${i + 1}] (${chunk.title || "document"})\n${chunk.text}`)
-    .join("\n\n");
+  //
+  // Built ONCE. `built.prompt` goes to the model and `built.blocks` goes to the
+  // evals harness below, and they are the same text by construction — see
+  // lib/context.ts for why that equality is load-bearing.
+  const built = buildContext(ordered);
+
+  // A citation must point at text the model actually read. When the size guard
+  // drops excerpts, drop their citations too — otherwise the Ask/Discussion
+  // viewer offers buttons for evidence that was never in the prompt, and
+  // lib/evals.ts credits `citedFiles` / `correctDocsCited` for documents absent
+  // from the context its faithfulness judge is given.
+  const keptSources =
+    built.dropped === 0
+      ? sources
+      : (() => {
+          const kept = new Set(ordered.slice(0, built.included).map(chunkKey));
+          const trimmed = sources.filter((_, i) => kept.has(chunkKey(sourceChunks[i])));
+          console.warn(
+            `[rag] dropped ${sources.length - trimmed.length} citation(s) alongside ` +
+              `${built.dropped} excerpt(s) trimmed by the context guard.`
+          );
+          return trimmed;
+        })();
 
   const answer = await generateAnswer(
     SYSTEM_PROMPT,
-    `Contract excerpts:\n\n${context}\n\nQuestion: ${question}`
+    `Contract excerpts:\n\n${built.prompt}\n\nQuestion: ${question}`
   );
 
   // If the model itself couldn't find the answer, present it as a clean refusal.
@@ -316,15 +351,17 @@ export async function runQuery(
       answer,
       refused: modelRefused,
       refusedBy: modelRefused ? "model" : undefined,
-      sources: modelRefused ? [] : sources,
+      sources: modelRefused ? [] : keptSources,
       topScore,
     },
-    // Exactly what the model receives, title line included. Returning bare
-    // chunk text made the evals inspect LESS than the model saw: a golden whose
-    // expected answer names documents ("the Warehouse Lease; the Transportation
-    // MSA") was reported as a retrieval MISS even when chunks from both were
-    // retrieved, because those names live in the title, not the clause text.
-    context: ordered.map((c) => `(${c.title || "document"})\n${c.text}`),
+    // The SAME blocks that were joined into built.prompt above — not a
+    // reconstruction of them. History for why that matters: when this returned
+    // bare chunk text, the evals inspected LESS than the model saw, and a golden
+    // whose expected answer names documents ("the Warehouse Lease; the
+    // Transportation MSA") was reported as a retrieval MISS even though chunks
+    // from both were retrieved — the names live in the title line, not the
+    // clause text. lib/context.ts now makes that divergence unrepresentable.
+    context: built.blocks,
   };
 }
 
@@ -374,14 +411,19 @@ export async function queryPortfolio(
 ): Promise<PortfolioResult[]> {
   const results: PortfolioResult[] = [];
   for (const cfg of CLIENT_CONFIGS) {
+    // Timed per client. The clients are queried sequentially, so the request's
+    // total elapsed time belongs to no single one of them; only this number is
+    // meaningful to attribute to a tenant.
+    const startedAt = Date.now();
     try {
       const result = await queryContracts(cfg.id, question);
-      results.push({ clientId: cfg.id, clientName: cfg.name, result });
+      results.push({ clientId: cfg.id, clientName: cfg.name, result, ms: Date.now() - startedAt });
     } catch (err: any) {
       results.push({
         clientId: cfg.id,
         clientName: cfg.name,
         error: err?.message ?? "Query failed",
+        ms: Date.now() - startedAt,
       });
     }
   }

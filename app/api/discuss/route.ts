@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getClientConfig } from "@/lib/clients";
 import { discuss, type Turn } from "@/lib/conversation";
+import { nowStamp, recordQuery } from "@/lib/monitor";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,7 +46,43 @@ export async function POST(req: NextRequest) {
           .slice(-MAX_TURNS)
       : [];
 
-    return NextResponse.json(await discuss(clientId, turns, question.trim()));
+    const startedAt = Date.now();
+    // The question is recorded like any other surface's. Two fields, not one,
+    // because a follow-up is REWRITTEN before it is searched (lib/conversation.ts):
+    // the user types "how much notice to stop it?" and retrieval runs on "how much
+    // notice is required to stop the Cascade agreement auto-renewing". Recording
+    // only the typed text would attach a score of 0.41 to a question that was
+    // never searched, which is exactly the sort of misleading record that sends an
+    // operator hunting for a retrieval bug that isn't there.
+    try {
+      const out = await discuss(clientId, turns, question.trim());
+      await recordQuery({
+        time: nowStamp(),
+        clientId,
+        surface: "discuss",
+        question: question.trim(),
+        searchedFor: out.rewritten ? out.searchedFor : undefined,
+        topScore: out.result.topScore,
+        refused: out.result.refused,
+        refusedBy: out.result.refusedBy,
+        sources: out.result.sources.length,
+        latencyMs: Date.now() - startedAt,
+      });
+      return NextResponse.json(out);
+    } catch (err: any) {
+      await recordQuery({
+        time: nowStamp(),
+        clientId,
+        surface: "discuss",
+        question: question.trim(),
+        topScore: 0,
+        refused: false,
+        sources: 0,
+        latencyMs: Date.now() - startedAt,
+        error: err?.message ?? "Discussion failed",
+      });
+      throw err;
+    }
   } catch (err: any) {
     console.error("[/api/discuss]", err);
     return NextResponse.json({ error: err?.message ?? "Discussion failed" }, { status: 500 });
