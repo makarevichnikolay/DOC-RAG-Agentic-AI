@@ -407,12 +407,14 @@ export default function DiscussPage() {
       </div>
 
       <p className="muted" style={{ fontSize: 12 }}>
-        This conversation is held in the browser only — it is never written to the
-        server or the database, and it is discarded when you leave this page, switch
-        client, or press <b>End session</b>. Each follow-up is rewritten into a
-        standalone question before searching, so &ldquo;how much notice to stop
-        it?&rdquo; finds the right clause; the guardrail then runs on that rewritten
-        question, not on the conversation.
+        The <b>transcript</b> is held in the browser only — it is never written to
+        the server or the database, and it is discarded when you leave this page,
+        switch client, or press <b>End session</b>. Individual <b>questions</b> are
+        recorded in the admin monitoring log, the same as questions asked on the Ask
+        screen, so refusals and slow queries can be investigated. Each follow-up is
+        rewritten into a standalone question before searching, so &ldquo;how much
+        notice to stop it?&rdquo; finds the right clause; the guardrail then runs on
+        that rewritten question, not on the conversation.
       </p>
     </div>
   );

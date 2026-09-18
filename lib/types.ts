@@ -64,6 +64,15 @@ export type PortfolioResult = {
   clientName: string;
   result?: QueryResult;
   error?: string;
+  /**
+   * Wall-clock time for THIS client's query alone.
+   *
+   * The fan-out runs one client after another, so the total elapsed time of the
+   * whole request is not this client's cost. Recording the total against every
+   * client (which /api/portfolio used to do) multiplied the monitoring p50/p95
+   * by the number of clients.
+   */
+  ms: number;
 };
 
 export type RegisterRow = {
